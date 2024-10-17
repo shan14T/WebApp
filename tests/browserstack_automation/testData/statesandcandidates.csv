@@ -1,0 +1,51 @@
+stateName,stateURL,stateTitle,stateAbb
+alaska,alaska-candidates/cs/,Alaska Candidates - WeVote,AK
+alabama,alabama-candidates/cs/,Alabama Candidates - WeVote,AL
+arkansas,arkansas-candidates/cs/,Arkansas Candidates - WeVote,AR
+arizona,arizona-candidates/cs/,Arizona Candidates - WeVote,AZ
+california,california-candidates/cs/,California Candidates - WeVote,CA
+colorado,colorado-candidates/cs/,Colorado Candidates - WeVote,CO
+connecticut,connecticut-candidates/cs/,Connecticut Candidates - WeVote,CT
+district-of-columbia,district-of-columbia-candidates/cs/,District of Columbia Candidates - WeVote,DC
+delaware,delaware-candidates/cs/,Delaware Candidates - WeVote,DE
+florida,florida-candidates/cs/,Florida Candidates - WeVote,FL
+georgia,georgia-candidates/cs/,Georgia Candidates - WeVote,GA
+hawaii,hawaii-candidates/cs/,Hawaii Candidates - WeVote,HI
+iowa,iowa-candidates/cs/,Iowa Candidates - WeVote,IA
+idaho,idaho-candidates/cs/,Idaho Candidates - WeVote,ID
+illinois,illinois-candidates/cs/,Illinois Candidates - WeVote,IL
+indiana,indiana-candidates/cs/,Indiana Candidates - WeVote,IN
+kansas,kansas-candidates/cs/,Kansas Candidates - WeVote,KS
+kentucky,kentucky-candidates/cs/,Kentucky Candidates - WeVote,KY
+louisiana,louisiana-candidates/cs/,Louisiana Candidates - WeVote,LA
+massachusetts,massachusetts-candidates/cs/,Massachusetts Candidates - WeVote,MA
+maryland,maryland-candidates/cs/,Maryland Candidates - WeVote,MD
+maine,maine-candidates/cs/,Maine Candidates - WeVote,ME
+michigan,michigan-candidates/cs/,Michigan Candidates - WeVote,MI
+minnesota,minnesota-candidates/cs/,Minnesota Candidates - WeVote,MN
+montana,montana-candidates/cs/,Montana Candidates - WeVote,MT
+national,national-candidates/cs/,Candidates - WeVote,all
+north-carolina,north-carolina-candidates/cs/,North Carolina Candidates - WeVote,NC
+north-dakota,north-dakota-candidates/cs/,North Dakota Candidates - WeVote,ND
+nebraska,nebraska-candidates/cs/,Nebraska Candidates - WeVote,NE
+new-hampshire,new-hampshire-candidates/cs/,New Hampshire Candidates - WeVote,NH
+new-jersey,new-jersey-candidates/cs/,New Jersey Candidates - WeVote,NJ
+new-mexico,new-mexico-candidates/cs/,New Mexico Candidates - WeVote,NM
+nevada,nevada-candidates/cs/,Nevada Candidates - WeVote,NV
+new-york,new-york-candidates/cs/,New York Candidates - WeVote,NY
+ohio,ohio-candidates/cs/,Ohio Candidates - WeVote,OH
+oklahoma,oklahoma-candidates/cs/,Oklahoma Candidates - WeVote,OK
+oregon,oregon-candidates/cs/,Oregon Candidates - WeVote,OR
+pennsylvania,pennsylvania-candidates/cs/,Pennsylvania Candidates - WeVote,PA
+rhode-island,rhode-island-candidates/cs/,Rhode Island Candidates - WeVote,RI
+south-carolina,south-carolina-candidates/cs/,South Carolina Candidates - WeVote,SC
+south-dakota,south-dakota-candidates/cs/,South Dakota Candidates - WeVote,SD
+tennessee,tennessee-candidates/cs/,Tennessee Candidates - WeVote,TN
+texas,texas-candidates/cs/,Texas Candidates - WeVote,TX
+utah,utah-candidates/cs/,Utah Candidates - WeVote,UT
+virginia,virginia-candidates/cs/,Virginia Candidates - WeVote,VA
+vermont,vermont-candidates/cs/,Vermont Candidates - WeVote,VT
+washington,washington-candidates/cs/,Washington Candidates - WeVote,WA
+wisconsin,wisconsin-candidates/cs/,Wisconsin Candidates - WeVote,WI
+west-virginia,west-virginia-candidates/cs/,West Virginia Candidates - WeVote,WV
+wyoming,wyoming-candidates/cs/,Wyoming Candidates - WeVote,WY
