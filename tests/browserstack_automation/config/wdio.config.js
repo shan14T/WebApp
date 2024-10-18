@@ -42,7 +42,7 @@ module.exports.config = {
     '../specs/ReadyPage.js',
     '../specs/TermsPage.js',
     '../specs/TopNavigation.js',
-    '../specs/WRFO.js',
+    '../specs/WhosRunningForOffice.js',
   ],
   capabilities,
   commonCapabilities: {
