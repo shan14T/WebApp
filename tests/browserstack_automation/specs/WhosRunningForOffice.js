@@ -1,6 +1,5 @@
 import { $,driver, expect, browser} from '@wdio/globals';
 import ReadyPage from '../page_objects/ready.page.js';
-import WRFOPage from '../page_objects/footer_wrfo.page.js';
 import PopulateData from '../config/populateStateandCandidateData.js';
 // const csvData = require('../config/populateStateandCandidateData.js');
 const assert = require('assert');
@@ -62,4 +61,4 @@ describe('WhosRunningForOfficePage', () => {
       }
     }
 });
-  });
+});
