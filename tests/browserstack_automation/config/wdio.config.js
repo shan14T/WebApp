@@ -42,6 +42,8 @@ module.exports.config = {
     '../specs/ReadyPage.js',
     '../specs/TermsPage.js',
     '../specs/TopNavigation.js',
+    '../specs/TopicsPage.js',
+    '../specs/HowItWorks.js',
     '../specs/WhosRunningForOffice.js',
   ],
   capabilities,
