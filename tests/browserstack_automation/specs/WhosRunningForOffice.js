@@ -3,7 +3,6 @@ import ReadyPage from '../page_objects/ready.page.js';
 import PopulateData from '../testData/populateStateandCandidateData.js';
 
 const assert = require('assert');
-
 const { describe, it } = require('mocha');
 
 const waitTime = 8000;
