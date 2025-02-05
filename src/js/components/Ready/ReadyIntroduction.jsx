@@ -141,7 +141,7 @@ class ReadyIntroduction extends Component {
                         <>Since you are signed in with Twitter, you will see endorsements of everyone you follow on Twitter. </>
                       ) : (
                         <>
-                          <span className="u-link-color u-link-color-on-hover u-cursor--pointer" onClick={this.onSignInClick}>
+                          <span id="linkToTwitterAcct" className="u-link-color u-link-color-on-hover u-cursor--pointer" onClick={this.onSignInClick}>
                             Link to your Twitter account
                           </span>
                           {' '}

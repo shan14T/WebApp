@@ -1,6 +1,7 @@
 import { $, $$, expect, driver, browser } from '@wdio/globals';
 import Page from './page';
 
+
 class ReadyPage extends Page {
   constructor () {
     super().title = 'Ready to Vote? - WeVote';
@@ -233,6 +234,147 @@ class ReadyPage extends Page {
   get getProfileIconElement () {
     return $('#profileAvatarHeaderBar');
   }
+
+  get followAlertMsg(){
+    return $('//div[@class="sc-dtInlm dBSTL MuiAlert-message"]');
+  }
+
+  get unfollowAlertMsg(){
+    return $('//div[@class="sc-dtInlm dBSTL MuiAlert-message"]');
+  }
+   
+  get weVoteHelpsYouMenuItem1()
+  {
+    return $('#weVoteHelpsYouMenuItem1');
+  }
+
+  get weVoteHelpsYouMenuItem1Text()
+  {
+    return $('#readyIntroductionStepText1');
+  }
+
+  get weVoteHelpsYouMenuItem2()
+  {
+    return $('#weVoteHelpsYouMenuItem2');
+  }
+
+  get weVoteHelpsYouMenuItem2Text()
+  {
+    return $('#readyIntroductionStepText2');
+  }
+
+  get weVoteHelpsYouMenuItem3()
+  {
+    return $('#weVoteHelpsYouMenuItem3');
+  }
+
+  get weVoteHelpsYouMenuItem3Text()
+  {
+    return $('#readyIntroductionStepText3');
+  }
+
+  get finePrintMenuItema()
+  {
+    return $('#finePrintMenuItema');
+  }
+
+  get readyFinePrintStepTexta()
+  {
+    return $('#readyFinePrintStepTexta');
+  }
+
+  get finePrintMenuItemb()
+  {
+    return $('#finePrintMenuItemb');
+  }
+
+  get readyFinePrintStepTextb()
+  {
+    return $('#readyFinePrintStepTextb');
+  }
+
+  get finePrintMenuItemc()
+  {
+    return $('#finePrintMenuitemc');
+  }
+
+  get readyFinePrintStepTextc()
+  {
+    return $('#readyFinePrintStepTextc');
+  }
+  
+
+  get finePrintMenuItemd()
+  {
+    return $('#finePrintStepd');
+  }
+
+  get readyFinePrintStepTextd()
+  {
+    return $('#readyFinePrintStepTextd');
+  }
+
+  get topicToolTipMsg()
+  {
+    return $('#topicToolTipMsg');
+  }
+
+  get topicIconToolTipMsg()
+  {
+    return $('#topicToolTipMsg');
+  }
+
+  get topicName()
+  {
+    return $("//*[contains(text(), '_topicName')]");
+  }
+
+  get topicName_DemocraticClubs()
+  {
+    return $('#Democratic Clubs_topicName');
+  }
+
+  get topicName_ProLife()
+  {
+    return $('#Pro-life_topicName');
+  }
+
+
+
+
+
+
+
+
+
+  get enterYourAddressLink()
+  {
+    return $('#enterAddressText');
+  }
+
+  get enterYourAddressWindowHeader()
+  {
+    return $('#SelectBallotModalTitleId');
+  }
+
+  get linkToTwitterAcct()
+  {
+    return $("//span[contains(text(), 'Link to your Twitter account')]");
+
+  }
+  
+
+
+
+  async followAlertMsgText(){
+    await this.followAlertMsg.getText();
+  }
+  async unfollowAlertMsgText(){
+    await this.unfollowAlertMsg.getText();
+  }
+
+  
+
 
 
   async login () {
