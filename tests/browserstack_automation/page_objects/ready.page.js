@@ -2,6 +2,7 @@ import { $, $$, expect, driver, browser } from '@wdio/globals';
 import Page from './page';
 
 
+
 class ReadyPage extends Page {
   constructor() {
     super().title = 'Ready to Vote? - WeVote';
