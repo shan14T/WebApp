@@ -1,5 +1,5 @@
 import { driver, $ } from '@wdio/globals';
-import { VOTER_DEVICE_ID as voterDeviceId } from '../config/browserstack.config';
+//import { VOTER_DEVICE_ID as voterDeviceId } from '../config/browserstack.config';
 
 export default class Page {
   constructor () {

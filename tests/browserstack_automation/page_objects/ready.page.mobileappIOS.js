@@ -8,6 +8,7 @@ class ReadyPage extends Page {
 
  get wevoteLogo () {
     return $('//XCUIElementTypeImage[@name="WeVote Logo"]');
+
   }
 
   get viewUpcomingBallotButton () {
@@ -72,8 +73,8 @@ class ReadyPage extends Page {
   {
     return $('-ios class chain:**/XCUIElementTypeButton[`name == "show more"`][1]');
   }
-  
-  
+
+
   async updateBallotAddress (ballotadd) {
     await this.ballotAddress.click();
     await this.ballotAddressInput.setValue(ballotadd);
