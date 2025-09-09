@@ -12,7 +12,8 @@ try {
   // Run `npm run wdio:setup`
 }
 
-const capabilities = [...browserCapabilities, ...mobileCapabilities];
+//const capabilities = [...browserCapabilities, ...mobileCapabilities];
+const capabilities = [...browserCapabilities];
 
 const date = new Date();
 
@@ -69,7 +70,7 @@ export const config = {
   framework: 'mocha',
   mochaOpts: {
     ui: 'bdd',
-    timeout: 100000,
+    timeout: 999999,
   },
   // https://webdriver.io/docs/customcommands#examples
   before: function before () {

@@ -9,6 +9,8 @@ config.capabilities = [{
   }
 }];
 
+
+
 delete config.user;
 delete config.key;
 config.services = [];
