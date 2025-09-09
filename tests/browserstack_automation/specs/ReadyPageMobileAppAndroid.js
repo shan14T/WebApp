@@ -26,8 +26,6 @@ const waitTime = 8000;
 
 describe('ReadyPage',  function () {
   this.timeout(9999999); 
-  
- 
 
  // Ready_001 and Ready_003
  it('Ready_001 and Ready_003:verifyElectionCountDownRedirect and verifyViewYourBallotRedirect', async () => {
@@ -104,7 +102,7 @@ describe('ReadyPage',  function () {
  });
 
  // Ready_005
- it.only('Ready_005: unfurlIssues - PopularIssues/ShowMoreIssues', async () => {
+ it('Ready_005: unfurlIssues - PopularIssues/ShowMoreIssues', async () => {
   console.log('Tcs : Ready_005 : unfurlIssues - PopularIssues/ShowMoreIssues');
  
 async function collectAllFollowButtons() {
