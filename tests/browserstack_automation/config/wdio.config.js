@@ -52,7 +52,7 @@ module.exports.config = {
     '../specs/BallotPage.js',
     '../specs/CandidatesPage.js',
     '../specs/WhosRunningForOffice.js',
-    '../specs/ReadyPage.js', 
+    '../specs/ReadyPage.js',
     '../specs/ReadyPageMobileBrowser.js',
     '../specs/WhosRunningForOfficeMobileBrowser.js',
     '../specs/ReadyPageMobileAppAndroid.js',
@@ -91,7 +91,7 @@ module.exports.config = {
       "appium:automationName" : "UIAutomator2",
       "appium:app" : "bs://fa870d3c3f9e21d5131705d3c09cc42936f37d38",
       //"appium:disableIdLocatorAutocompletion": true,
-     
+
       'bstack:options' : {
       //   "userName" : "shanthi_evUGuW",
       //   "accessKey" : "7mpysxisX9Zvzs8oGZAi",
@@ -119,7 +119,7 @@ module.exports.config = {
     } */
 
 
-    
+
   //],
   commonCapabilities: {
     'bstack:options': {
@@ -132,7 +132,7 @@ module.exports.config = {
       gpsLocation: '37.804363,-122.271111',
       maskCommands: 'setValues, getValues, setCookies, getCookies',
       video: 'true',
-      
+
     },
   },
   maxInstances: 1,

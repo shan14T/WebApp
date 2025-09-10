@@ -1,15 +1,17 @@
 import React, { Component, Suspense } from 'react';
+import TagManager from 'react-gtm-module';
 import { renderLog } from '../../common/utils/logging';
 import VoterConstants from '../../constants/VoterConstants';
 import AppObservableStore from '../../common/stores/AppObservableStore';
 import BallotStore from '../../stores/BallotStore';
 import SupportStore from '../../stores/SupportStore';
 import VoterStore from '../../stores/VoterStore';
-import HowItWorksWizard from './HowItWorksWizard';
+import CompleteYourProfileWizard from './CompleteYourProfileWizard';
+import lookupPageNameAndPageTypeDict, { getPageDetails } from '../../utils/lookupPageNameAndPageTypeDict';
 
 const SignInModal = React.lazy(() => import(/* webpackChunkName: 'SignInModal' */ '../../common/components/SignIn/SignInModal'));
 
-class CompleteYourProfile2024 extends Component {
+class CompleteYourProfileOnBallot extends Component {
   constructor (props) {
     super(props);
     this.state = {
@@ -30,6 +32,18 @@ class CompleteYourProfile2024 extends Component {
   }
 
   componentDidMount () {
+    // Track component load/impression for analytics
+    const dataLayerObject = {
+      actionDetails: {
+        actionType: 'landing',
+        componentName: 'CompleteYourProfile2024',
+      },
+      event: 'landing',
+      pageDetails: getPageDetails(),
+      userDetails: VoterStore.getAnalyticsUserDetails(),
+    };
+    // console.log('CompleteYourProfile2024 component loaded:', dataLayerObject);
+    TagManager.dataLayer({ dataLayer: dataLayerObject });
     this.ballotStoreListener = BallotStore.addListener(this.onBallotStoreChange.bind(this));
     this.supportStoreListener = SupportStore.addListener(this.onSupportStoreChange.bind(this));
     this.voterStoreListener = VoterStore.addListener(this.onVoterStoreChange.bind(this));
@@ -93,10 +107,6 @@ class CompleteYourProfile2024 extends Component {
     } else {
       this.setItemNotComplete(stepIdSignInToSave);
     }
-    this.setState({
-      howItWorksWatched,
-      personalizedScoreIntroCompleted,
-    }, () => this.sortSteps());
   }
 
   setItemComplete (stepItemIdToMarkComplete) {
@@ -135,21 +145,13 @@ class CompleteYourProfile2024 extends Component {
     const voterOpposesListLength = SupportStore.getVoterOpposesListLength();
     const voterSupportsListLength = SupportStore.getVoterSupportsListLength();
     const ballotItemChoicesCount = voterOpposesListLength + voterSupportsListLength;
-    let stepIdHowItWorks = 1;
-    let stepIdPersonalizedScore = 2;
-    let stepIdSignInToSave = 3;
-    if (ballotItemChoicesCount >= 4 && !voterIsSignedIn) {
-      stepIdSignInToSave = 1;
-      stepIdHowItWorks = 2;
-      stepIdPersonalizedScore = 3;
-    }
     this.setState({
-      stepIdHowItWorks,
-      stepIdPersonalizedScore,
-      stepIdSignInToSave,
+      stepIdHowItWorks: 1,
+      stepIdPersonalizedScore: 2,
+      stepIdSignInToSave: 3,
       steps: [
         {
-          id: stepIdHowItWorks,
+          id: 1,
           title: 'How WeVote works',
           buttonText: '',
           completed: false,
@@ -159,7 +161,7 @@ class CompleteYourProfile2024 extends Component {
           width: '33.33%',
         },
         {
-          id: stepIdPersonalizedScore,
+          id: 2,
           title: 'Your personalized score',
           buttonText: '',
           completed: false,
@@ -169,7 +171,7 @@ class CompleteYourProfile2024 extends Component {
           width: '33.33%',
         },
         {
-          id: stepIdSignInToSave,
+          id: 3,
           title: voterIsSignedIn ? 'Your ballot choices and settings are saved' : 'Sign in or join to save your ballot choices/settings',
           buttonText: voterIsSignedIn ? '' : 'Sign up to save choices',
           completed: false,
@@ -179,16 +181,61 @@ class CompleteYourProfile2024 extends Component {
           width: '33.33%',
         },
       ],
-    }, () => this.setCompletedStatus());
+    }, () => {
+      this.setCompletedStatus();
+    });
   }
 
   openHowItWorksModal = () => {
+    // console.log('openHowItWorksModal called');
+
     AppObservableStore.setShowHowItWorksModal(true);
+
+    // Add dataLayer tracking
+    const { location: { pathname: currentPathname } } = window;
+    const currentPage = lookupPageNameAndPageTypeDict(currentPathname);
+
+    const dataLayerObject = {
+      actionDetails: {
+        actionType: 'openModal',
+        buttonId: 'howWeVoteWorksStep',
+      },
+      event: 'action',
+      destinationDetails: {
+        destinationPageName: 'HowItWorksModal',
+        destinationPageType: currentPage.pageType, // Use same pageType as current page
+        destinationPathname: currentPathname,
+      },
+      pageDetails: getPageDetails(),
+      userDetails: VoterStore.getAnalyticsUserDetails(),
+    };
+    // console.log('openHowItWorksModal dataLayer:', dataLayerObject);
+    TagManager.dataLayer({ dataLayer: dataLayerObject });
   }
 
   openPersonalizedScoreIntroModal = () => {
-    // console.log('Opening modal');
+    // console.log('openPersonalizedScoreIntroModal called');
     AppObservableStore.setShowPersonalizedScoreIntroModal(true);
+    // Add dataLayer tracking
+    const { location: { pathname: currentPathname } } = window;
+    const currentPage = lookupPageNameAndPageTypeDict(currentPathname);
+
+    const dataLayerObject = {
+      actionDetails: {
+        actionType: 'openModal',
+        buttonId: 'yourPersonalizedScoreStep',
+      },
+      event: 'action',
+      destinationDetails: {
+        destinationPageName: 'PersonalizedScoreIntroModal',
+        destinationPageType: currentPage.pageType,
+        destinationPathname: currentPathname,
+      },
+      pageDetails: getPageDetails(),
+      userDetails: VoterStore.getAnalyticsUserDetails(),
+    };
+    // console.log('openPersonalizedScoreIntroModal dataLayer:', dataLayerObject);
+    TagManager.dataLayer({ dataLayer: dataLayerObject });
   }
 
   goToNextIncompleteStep = () => {
@@ -207,27 +254,57 @@ class CompleteYourProfile2024 extends Component {
     if (goToNextIncompleteStepForced) {
       this.goToNextIncompleteStep();
     }
-    this.setState({
-      goToNextIncompleteStepForced: false,
-    });
   }
 
   goToStep = (stepId) => {
-    this.sortSteps();
     this.setState({
       activeStep: stepId,
     });
   }
 
   toggleShowSignInModal = () => {
+    // Refactor to use:
+    // AppObservableStore.setShowSignInModal(
     const { showSignInModal } = this.state;
+
+    // console.log('toggleShowSignInModal called, current state:', showSignInModal);
+
+    const voterIsSignedIn = VoterStore.getVoterIsSignedIn();
+
+    // Only track dataLayer when opening the modal (not closing)
+    if (!showSignInModal && !voterIsSignedIn) {
+      // Add dataLayer tracking
+      const { location: { pathname: currentPathname } } = window;
+      const currentPage = lookupPageNameAndPageTypeDict(currentPathname);
+
+      const dataLayerObject = {
+        actionDetails: {
+          actionType: !showSignInModal ? 'openModal' : 'closeModal',
+          buttonId: 'SignInToSaveStep',
+        },
+        event: 'action',
+        destinationDetails: {
+          destinationPageName: 'SignInModal',
+          destinationPageType: currentPage.pageType,
+          destinationPathname: currentPathname,
+        },
+        pageDetails: {
+          pageName: 'CompleteYourProfileWizard',
+          pageType: currentPage.pageType,
+          pathname: currentPathname,
+        },
+        userDetails: VoterStore.getAnalyticsUserDetails(),
+      };
+      // console.log('toggleShowSignInModal dataLayer:', dataLayerObject);
+      TagManager.dataLayer({ dataLayer: dataLayerObject });
+    }
+
     this.setState({
       showSignInModal: !showSignInModal,
     });
   }
 
   previousStep () {
-    this.sortSteps();
     const { steps } = this.state;
     const currentIndex = steps.map((oneStep) => oneStep.id).indexOf(this.state.activeStep);
     if (currentIndex >= 1) {
@@ -238,7 +315,6 @@ class CompleteYourProfile2024 extends Component {
   }
 
   nextStep () {
-    this.sortSteps();
     const { steps } = this.state;
     const currentIndex = steps.map((e) => e.id).indexOf(this.state.activeStep);
     if (steps[currentIndex + 1]) {
@@ -246,33 +322,6 @@ class CompleteYourProfile2024 extends Component {
         activeStep: steps[currentIndex + 1].id,
       });
     }
-  }
-
-  sortSteps () {
-    function compare (a, b) {
-      const itemA = a;
-      const itemB = b;
-
-      let comparison = 0;
-      if (itemA.id > itemB.id) {
-        comparison = 1;
-      } else if (itemA.id < itemB.id) {
-        comparison = -1;
-      }
-      return comparison;
-    }
-
-    const completed = this.state.steps.filter((oneStep) => oneStep.completed);
-    const notCompleted = this.state.steps.filter((oneStep) => !oneStep.completed);
-
-    if (completed) {
-      completed.sort(compare);
-    }
-    if (notCompleted) {
-      notCompleted.sort(compare);
-    }
-    const all = [...completed, ...notCompleted];
-    this.setState({ steps: all }, () => this.goToNextIncompleteStepIfForced());
   }
 
   render () {
@@ -287,7 +336,6 @@ class CompleteYourProfile2024 extends Component {
 
     // If we have completed all the steps, don't render this component
     const allStepsHaveBeenCompleted = howItWorksWatched && personalizedScoreIntroCompleted && voterIsSignedIn;
-    // Prior: (addressIntroCompleted || addressIntroCompletedByCookie) && howItWorksWatched && personalizedScoreIntroCompleted && valuesIntroCompleted && voterIsSignedIn
     const showCompleteYourProfileForDebugging = false;
     if (showCompleteYourProfileForDebugging) {
       // Pass by this OFF switch so we render this component
@@ -311,10 +359,10 @@ class CompleteYourProfile2024 extends Component {
           </Suspense>
         )}
 
-        <HowItWorksWizard steps={steps} activeStep={activeStep} />
+        <CompleteYourProfileWizard steps={steps} activeStep={activeStep} />
       </div>
     );
   }
 }
 
-export default CompleteYourProfile2024;
+export default CompleteYourProfileOnBallot;

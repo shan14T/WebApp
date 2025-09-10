@@ -2,11 +2,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import TagManager from 'react-gtm-module';
 import styled from 'styled-components';
+import VoterStore from '../../../stores/VoterStore';
+import { getPageDetails } from '../../../utils/lookupPageNameAndPageTypeDict';
 import { blurTextFieldAndroid, focusTextFieldAndroid } from '../../utils/cordovaUtils';
 import { renderLog } from '../../utils/logging';
 import SearchBase from './SearchBase';
-import VoterStore from '../../../stores/VoterStore';
-import lookupPageNameAndPageTypeDict from '../../../utils/lookupPageNameAndPageTypeDict';
 
 /* eslint-disable jsx-a11y/control-has-associated-label  */
 class SearchBar2024 extends Component {
@@ -60,9 +60,6 @@ class SearchBar2024 extends Component {
   }
 
   handleSearchBarKeyPress = () => {
-    const { location: { pathname: currentPathname } } = window;
-    const page = lookupPageNameAndPageTypeDict(currentPathname);
-
     if (this.timer) {
       clearTimeout(this.timer);
     }
@@ -74,17 +71,13 @@ class SearchBar2024 extends Component {
       this.props.searchFunction(searchString);
       // if(this.props.trackSearch){
       const dataLayerObject = {
-        event: 'searchKeyword',
-        userDetails: {
-          stateCode: VoterStore.getVoterStateCode(),
-          userCohort: VoterStore.getAnalyticsUserCohort(),
-          voterWeVoteId: VoterStore.getVoterWeVoteId(),
+        actionDetails: {
+          actionType: 'search',
+          buttonId: 'search_input',
         },
-        pageDetails: {
-          pageType: page.pageType,
-          pageName: page.pageName,
-          pathname: currentPathname,
-        },
+        event: 'action',
+        userDetails: VoterStore.getAnalyticsUserDetails(),
+        pageDetails: getPageDetails(),
         searchString,
       };
       // console.log(dataLayerObject)
