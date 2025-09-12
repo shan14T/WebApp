@@ -6,7 +6,8 @@ const browserCapabilities = require('../capabilities/browser.json');
 let mobileCapabilities = [];
 
 try {
-  const data = readFileSync('./tests/browserstack_automation/capabilities/mobile.json', { encoding: 'utf8' });
+  //const data = readFileSync('./tests/browserstack_automation/capabilities/mobile.json', { encoding: 'utf8' });
+  const data = readFileSync('./tests/browserstack_automation/capabilities/devices_test_2025.json', { encoding: 'utf8' });
   mobileCapabilities = JSON.parse(data);
 } catch (error) {
 
