@@ -30,6 +30,7 @@ import PositionRowListCompressed from './PositionRowListCompressed';
 import BallotMatchIndicator2024 from '../BallotItem/BallotMatchIndicator2024';
 import lookupPageNameAndPageTypeDict, { getPageDetails } from '../../utils/lookupPageNameAndPageTypeDict';
 import webAppConfig from '../../config';
+import BallotStore from '../../stores/BallotStore';
 
 // const DelayedLoad = React.lazy(() => import(/* webpackChunkName: 'DelayedLoad' */ '../../common/components/Widgets/DelayedLoad'));
 const ImageHandler = React.lazy(() => import(/* webpackChunkName: 'ImageHandler' */ '../ImageHandler'));
@@ -49,6 +50,7 @@ class BallotScrollingContainer extends Component {
     this.state = {
       hideLeftArrow: true,
       hideRightArrow: true,
+      hasEndorsements: false,
     };
 
     this.onClickShowOrganizationModalWithBallotItemInfo = this.onClickShowOrganizationModalWithBallotItemInfo.bind(this);
@@ -107,8 +109,22 @@ class BallotScrollingContainer extends Component {
     if (candidateWeVoteId) {
       dataLayerObject.candidateDetails = CandidateStore.getAnalyticsCandidateDetails(candidateWeVoteId);
     }
+    const electionDetails = BallotStore.getAnalyticsElectionDetails();
+    if (electionDetails && electionDetails.electionDate) {
+      dataLayerObject.electionDetails = electionDetails;
+    }
     if (politicianWeVoteId) {
-      dataLayerObject.politicianDetails = PoliticianStore.getAnalyticsPoliticianDetails(politicianWeVoteId);
+      const politicianDetails = PoliticianStore.getAnalyticsPoliticianDetails(politicianWeVoteId);
+      // Only include fields that have valid values
+      const filteredPoliticianDetails = {};
+      Object.entries(politicianDetails).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') {
+          filteredPoliticianDetails[key] = value;
+        }
+      });
+      if (Object.keys(filteredPoliticianDetails).length > 0) {
+        dataLayerObject.politicianDetails = filteredPoliticianDetails;
+      }
     }
     // console.log('Pushing to dataLayer:', dataLayerObject);
     TagManager.dataLayer({ dataLayer: dataLayerObject });
@@ -135,10 +151,16 @@ class BallotScrollingContainer extends Component {
 
   // Add data-modal-trigger attribute to elements that should be triggered
   handleContainerClick = (e, weVoteId, buttonId) => {
-    const target = e.target;
+    const { target } = e;
     if (target.hasAttribute('data-modal-trigger')) {
       this.onClickShowOrganizationModalWithBallotItemInfoAndPositions(weVoteId, buttonId);
     }
+  }
+
+  checkCandidateHasEndorsements = (value) => {
+    this.setState({
+      hasEndorsements: value,
+    });
   }
 
   render () {
@@ -174,6 +196,7 @@ class BallotScrollingContainer extends Component {
           onScroll={this.checkArrowVisibility}
           showLeftGradient={!this.state.hideLeftArrow}
           showRightGradient={!this.state.hideRightArrow}
+          hasEndorsements={this.state.hasEndorsements}
           onClick={(e) => this.handleContainerClick(e, oneCandidate.we_vote_id, `ballotItemScrollingArea-${oneCandidate.we_vote_id}`)}
         >
           <CandidateContainer
@@ -268,6 +291,7 @@ class BallotScrollingContainer extends Component {
                     ballotItemWeVoteId={oneCandidate.we_vote_id}
                     showSupport
                     firstInstance={isFirstBallotItem}
+                    checkCandidateHasEndorsements={this.checkCandidateHasEndorsements}
                   />
                 </PositionRowListOneWrapper>
                 <PositionRowListOneWrapper>
@@ -275,6 +299,7 @@ class BallotScrollingContainer extends Component {
                     ballotItemWeVoteId={oneCandidate.we_vote_id}
                     showOppose
                     firstInstance={isFirstBallotItem}
+                    checkCandidateHasEndorsements={this.checkCandidateHasEndorsements}
                   />
                 </PositionRowListOneWrapper>
               </PositionRowListInnerWrapper>

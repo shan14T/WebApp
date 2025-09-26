@@ -58,10 +58,13 @@ const ChallengeStartPreview = React.lazy(() => import(/* webpackChunkName: 'Chal
 const ChallengeInviteFriendsJoin = React.lazy(() => import(/* webpackChunkName: 'ChallengeInviteFriendsJoin' */ './js/common/pages/ChallengeInviteFriends/ChallengeInviteFriendsJoin'));
 const ChallengeInviteCustomizeMessage = React.lazy(() => import(/* webpackChunkName: 'ChallengeInviteCustomizeMessage' */ './js/common/pages/ChallengeInviteFriends/ChallengeInviteCustomizeMessage'));
 const ChallengeInviteFriends = React.lazy(() => import(/* webpackChunkName: 'ChallengeInviteFriends' */ './js/common/pages/ChallengeInviteFriends/ChallengeInviteFriends'));
+const ChildSafety = React.lazy(() => import(/* webpackChunkName: 'ChildSafety' */ './js/pages/More/ChildSafety'));
 const ClaimYourPage = React.lazy(() => import(/* webpackChunkName: 'ClaimYourPage' */ './js/pages/Settings/ClaimYourPage'));
 const CompleteYourProfileMobile = React.lazy(() => import(/* webpackChunkName: 'CompleteYourProfileMobile' */ './js/common/pages/Settings/CompleteYourProfileMobile'));
 const Credits = React.lazy(() => import(/* webpackChunkName: 'Credits' */ './js/pages/More/Credits'));
 const Donate = React.lazy(() => import(/* webpackChunkName: 'Donate' */ './js/pages/More/Donate'));
+const DonateFaq = React.lazy(() => import(/* webpackChunkName: 'DonateFaq' */ './js/pages/More/DonateFaq'));
+const Drawers = React.lazy(() => import(/* webpackChunkName: 'Drawers' */ './js/components/Drawers/Drawers'));
 const ElectionReminder = React.lazy(() => import(/* webpackChunkName: 'ElectionReminder' */ './js/pages/More/ElectionReminder'));
 const Elections = React.lazy(() => import(/* webpackChunkName: 'Elections' */ './js/pages/More/Elections'));
 const ExtensionSignIn = React.lazy(() => import(/* webpackChunkName: 'ExtensionSignIn' */ './js/pages/More/ExtensionSignIn'));
@@ -82,6 +85,7 @@ const HowWeVoteHelps = React.lazy(() => import(/* webpackChunkName: 'HowWeVoteHe
 const Intro = React.lazy(() => import(/* webpackChunkName: 'Intro' */ './js/pages/Intro/Intro'));
 const IntroNetwork = React.lazy(() => import(/* webpackChunkName: 'IntroNetwork' */ './js/pages/Intro/IntroNetwork'));
 const Location = React.lazy(() => import(/* webpackChunkName: 'Location' */ './js/pages/Settings/Location'));
+const ManageMyCandidates = React.lazy(() => import(/* webpackChunkName: 'ManageMyCandidates' */ './js/pages/More/ManageMyCandidates'));
 const Measure = React.lazy(() => import(/* webpackChunkName: 'Measure' */ './js/pages/Ballot/Measure'));
 const News = React.lazy(() => import(/* webpackChunkName: 'News' */ './js/pages/Activity/News'));
 const Office = React.lazy(() => import(/* webpackChunkName: 'Office' */ './js/pages/Ballot/Office'));
@@ -220,11 +224,13 @@ class App extends Component {
       console.log('Cordova:   Header, hasDynamicIsland', hasDynamicIsland());
     }
 
+    this.acceptURLVariables();
     this.bypass2FA();
   }
 
   componentDidUpdate (prevProps) {
     if (prevProps.location.search !== this.props.location.search) {
+      this.acceptURLVariables();
       this.bypass2FA();
     }
   }
@@ -354,8 +360,19 @@ class App extends Component {
     this.setState({ showReadyLight: false });
   }
 
+  acceptURLVariables () {
+    const { location: { search: queryString } } = this.props;
+    const { showEditPoliticianNoticeSet  } = this.state;
+    const query = new URLSearchParams(queryString);
+    const showEditPoliticianNotice = query.get('show_edit_politician_notice');
+    if (showEditPoliticianNotice === '1' && !showEditPoliticianNoticeSet) {
+      this.setState({ showEditPoliticianNoticeSet: true });
+      AppObservableStore.setShowNotificationBannerAboveHeader(true);
+    }
+  }
+
   bypass2FA () {
-    const queryString = this.props.location.search;
+    const { location: { search: queryString } } = this.props;
     const query = new URLSearchParams(queryString);
     const cid = query.get('cid');
     const voterDeviceId = VoterStore.voterDeviceId();
@@ -404,7 +421,7 @@ class App extends Component {
     if (window.location.href.endsWith('/storybook')) {
       const destinationHref = `${window.location.href}-static/index.html?path=/docs/design-system--docs`;
       console.log('Storybook redirect from: ', window.location.href, ' to: ', destinationHref);
-      window.location.href = destinationHref;
+      window.location.href = destinationHref;      // This would cause big problems in Cordova, but shouldn't happen
     }
 
     return (
@@ -417,6 +434,9 @@ class App extends Component {
               {/* DO NOT put SnackNotifier or anything else that is non-essential here (to keep it out of the main chunk). */}
               <Suspense fallback={<HeaderBarSuspense />}>
                 <Header hideHeader={hideHeader} params={{ }} pathname={normalizedHref()} />
+              </Suspense>
+              <Suspense fallback={<></>}>
+                <Drawers />
               </Suspense>
               <Suspense fallback={<LoadingWheelComp />}>
                 <Switch>
@@ -506,6 +526,7 @@ class App extends Component {
                   <Route path="/candidate/:candidate_we_vote_id" exact component={Candidate} />
                   <Route path="/challenges/" exact component={ChallengesHomeLoader} />
                   <Route path="/donate" component={(isNotWeVoteMarketingSite || this.localIsAndroid()) ? ReadyRedirect : Donate} />
+                  <Route path="/donatefaq" component={(isNotWeVoteMarketingSite || this.localIsAndroid()) ? ReadyRedirect : DonateFaq} />
                   <Route path="/facebook_invitable_friends" component={FacebookInvitableFriends} />
                   <Route path="/findfriends/:set_up_page" exact component={FindFriendsRoot} />
                   <Route path="/findfriends" exact><FindFriendsRoot /></Route>
@@ -546,6 +567,7 @@ class App extends Component {
                   <Route path="/more/attributions" component={Attributions} />
                   <Route path="/more/credits" component={Credits} />
                   <Route path="/more/donate" component={(isNotWeVoteMarketingSite || this.localIsAndroid()) ? ReadyRedirect : Donate} />
+                  <Route path="/more/donatefaq" component={(isNotWeVoteMarketingSite || this.localIsAndroid()) ? ReadyRedirect : DonateFaq} />
                   <Route path="/more/elections" component={Elections} />
                   <Route path="/more/extensionsignin" component={ExtensionSignIn} />
                   <Route path="/more/facebooklandingprocess" component={FacebookLandingProcess} />
@@ -553,6 +575,7 @@ class App extends Component {
                   <Route path="/more/faq" component={FAQ} />
                   <Route path="/more/howwevotehelps" component={HowWeVoteHelps} />
                   <Route path="/more/jump" component={SignInJumpProcess} />
+                  <Route path="/more/manage" component={ManageMyCandidates} />
                   <Route path="/more/myballot" component={WeVoteBallotEmbed} />
                   <Route path="/more/network/friends" component={Friends} />
                   <Route path="/more/network/key/:invitation_secret_key/ignore" component={FriendInvitationByEmailVerifyProcess} />
@@ -607,6 +630,7 @@ class App extends Component {
                   <Route path="/setupaccount/:set_up_page" exact component={SetUpAccountRoot} />
                   <Route path="/setupaccount" exact><SetUpAccountRoot /></Route>
                   <Route path="/squads" exact><Squads /></Route>
+                  <Route path="/standards-against-child-sexual-abuse-and-exploitation-csae" component={ChildSafety} />
                   <Route exact path="/start-a-campaign"><CampaignStartIntro /></Route>
                   <Route exact path="/start-a-challenge"><ChallengeStartIntro /></Route>
                   <Route exact path="/start-a-challenge-why-winning-matters"><ChallengeStartAddDescription /></Route>

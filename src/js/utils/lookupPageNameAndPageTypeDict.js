@@ -59,28 +59,36 @@ const pageNameAndTypeSimpleDict = {
     pageType: 'settings',
   },
   '/settings/account': {
-    pageName: 'Account',
+    pageName: 'SignInOptionsPanel',
     pageType: 'settings',
   },
   '/settings/email': {
-    pageName: 'Email',
+    pageName: 'SettingsProfile',
     pageType: 'settings',
   },
   '/settings/notifications': {
-    pageName: 'Notifications',
+    pageName: 'SettingsNotifications',
     pageType: 'settings',
   },
   '/settings/profile': {
-    pageName: 'Profile',
+    pageName: 'SettingsProfile',
+    pageType: 'settings',
+  },
+  '/settings/securityAndSignIn': {
+    pageName: 'SignInOptionsPanel',
     pageType: 'settings',
   },
   '/settings/yourdata': {
-    pageName: 'Yourdata',
+    pageName: 'SettingsYourData',
     pageType: 'settings',
   },
   '/terms': {
     pageName: 'TermsOfService',
     pageType: 'termsOfService',
+  },
+  '/more/credits': {
+    pageName: 'Credits',
+    pageType: 'credits',
   },
 };
 
@@ -94,8 +102,13 @@ function calculatePageNameAndPageTypeDict (path) {
     settingsPageName = 'PoliticianDetailsPage';
     settingsPageType = 'politician';
   } else if (path.startsWith('/ballot')) {
-    settingsPageName = 'Ballot';
-    settingsPageType = 'ballot';
+    if (path.includes('/modal/share')) {
+      settingsPageName = 'SharedItemModal';
+      settingsPageType = 'ballot';
+    } else {
+      settingsPageName = 'Ballot';
+      settingsPageType = 'ballot';
+    }
   } else if (path.startsWith('/candidate/')) {
     settingsPageName = 'Candidate';
     settingsPageType = 'candidate';
@@ -132,8 +145,8 @@ function calculatePageNameAndPageTypeDict (path) {
     settingsPageName = 'IssuePage';
     settingsPageType = 'issue';
   } else if (/^\/[^/\s]+$/.test(path)) {
-    settingsPageName = 'TwitterHandleLanding';
-    settingsPageType = 'endorser';  // Changed from 'twitterHandleLanding' to 'endorser'
+    settingsPageName = 'OrganizationVoterGuide';
+    settingsPageType = 'endorser';
   }
 
   return {

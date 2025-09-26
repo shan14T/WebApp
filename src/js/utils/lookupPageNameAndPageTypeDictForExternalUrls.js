@@ -58,6 +58,14 @@ const pageNameAndTypeSimpleDictForExternalUrls = {
     pageName: 'WeVoteUSA',
     pageType: 'organization',
   },
+  'https://wevote.us/more/about': {
+    pageName: 'About',
+    pageType: 'about',
+  },
+  'https://wevote.us/more/credits': {
+    pageName: 'Credits',
+    pageType: 'credits',
+  },
 };
 
 /**
@@ -116,30 +124,60 @@ function calculatePageNameAndPageTypeDictForExternalUrls (pathOrURL) {
   } else if (/^\/[^/\s]+$/.test(pathOrURL)) {
     pageName = 'TwitterHandleLanding';
     pageType = 'endorser';  // Changed from 'twitterHandleLanding' to 'endorser'
+  } else if (pathOrURL.endsWith('/more/credits')) {
+    pageName = 'CreditsAndThanks';
+    pageType = 'about';
   }
 
-  if (pathOrURL.startsWith('https//') || pathOrURL.startsWith('http://')) {
-    if (pathOrURL.startsWith('https://instagram.com')) {
+  if (pathOrURL.startsWith('https://') || pathOrURL.startsWith('http://')) {
+    if (pathOrURL.startsWith('https://apps.apple.com')) {
+      pageName = 'AppStore';
+      pageType = 'appStore';
+    } else if (pathOrURL.startsWith('https://www.bing.com/search')) {
+      pageName = 'BingSearch';
+      pageType = 'searchEngine';
+    } else if (pathOrURL.startsWith('https://blog.wevote.us')) {
+      pageName = 'WeVoteBlog';
+      pageType = 'blog';
+    } else if (pathOrURL.startsWith('https://eepurl.com')) {
+      pageName = 'NewsletterSignup';
+      pageType = 'newsletter';
+    } else if (pathOrURL.startsWith('https://facebook.com') || pathOrURL.startsWith('https://www.facebook.com')) {
+      pageName = 'FacebookProfile';
+      pageType = 'socialMedia';
+    } else if (pathOrURL.startsWith('https://github.com')) {
+      pageName = 'GitHubProfile';
+      pageType = 'socialMedia';
+    } else if (pathOrURL.startsWith('https://play.google.com')) {
+      pageName = 'GooglePlayStore';
+      pageType = 'appStore';
+    } else if (pathOrURL.startsWith('https://google.com/search') || pathOrURL.startsWith('https://www.google.com/search')) {
+      pageName = 'GoogleSearch';
+      pageType = 'searchEngine';
+    } else if (pathOrURL.startsWith('https://help.wevote.us')) { // FAQ/Help site
+      pageName = 'WeVoteHelp';
+      pageType = 'help';
+    } else if (pathOrURL.startsWith('https://instagram.com') || pathOrURL.startsWith('https://www.instagram.com')) {
       pageName = 'Instagram';
       pageType = 'socialMedia';
-    } else if (pathOrURL.startsWith('https://x.com') || pathOrURL.startsWith('https://twitter.com')) { // Includes old Twitter domains
+    } else if (pathOrURL.includes('projects.propublica.org/nonprofits/organizations')) {
+      pageName = 'Propublica';
+      pageType = 'donation';
+    } else if (pathOrURL.startsWith('https://tiktok.com') || pathOrURL.startsWith('https://www.tiktok.com')) {
+      pageName = 'TikTokProfile';
+      pageType = 'socialMedia';
+    } else if (pathOrURL.startsWith('https://wevote.applytojob.com')) {
+      pageName = 'WeVoteCareers';
+      pageType = 'careers';
+    } else if (pathOrURL.startsWith('https://www.wikipedia.org')) {
+      pageName = 'Wikipedia';
+      pageType = 'encyclopedia';
+    } else if (pathOrURL.startsWith('https://x.com') || pathOrURL.startsWith('https://www.x.com') || pathOrURL.startsWith('https://twitter.com') || pathOrURL.startsWith('https://www.twitter.com')) { // Includes old Twitter domains
       pageName = 'XTwitter'; // Corrected name for X/Twitter
       pageType = 'socialMedia';
     } else if (pathOrURL.startsWith('https://www.youtube.com')) {
       pageName = 'YouTube';
       pageType = 'videoPlatform';
-    } else if (pathOrURL.startsWith('https://www.wikipedia.org')) {
-      pageName = 'Wikipedia';
-      pageType = 'encyclopedia';
-    } else if (pathOrURL.startsWith('https://www.bing.com/search')) {
-      pageName = 'BingSearch';
-      pageType = 'searchEngine';
-    } else if (pathOrURL.startsWith('https://www.google.com/search')) {
-      pageName = 'GoogleSearch';
-      pageType = 'searchEngine';
-    } else if (pathOrURL.includes('projects.propublica.org/nonprofits/organizations')) {
-      pageName = 'Propublica';
-      pageType = 'donation';
     }
   }
 
