@@ -1,7 +1,7 @@
 import { $, $$, expect, driver, browser } from '@wdio/globals';
-import Page from '../page';
+import Page from './page';
 
-class ReadyCordovaPage extends Page {
+class ReadyCordova extends Page {
     constructor() {
         super().title = 'Ready to Vote? - WeVote';
     }
@@ -105,4 +105,4 @@ class ReadyCordovaPage extends Page {
     }
 }
 
-export default new ReadyCordovaPage();
+export default new ReadyCordova();

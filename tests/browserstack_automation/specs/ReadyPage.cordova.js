@@ -1,5 +1,5 @@
 import { $, $$, driver, expect, browser } from '@wdio/globals';
-import ReadyCordovaPage from '../../page_objects/ready.cordova';
+import ReadyCordovaPage from '../page_objects/ready.cordova';
 //import ReadyPage from '../page_objects/ready.page';
 //import ReadyCordovaPage from 'tests/browserstack_automation/page_objects/ready.cordova.js';
 
