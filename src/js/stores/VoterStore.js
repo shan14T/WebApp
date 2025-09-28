@@ -94,6 +94,7 @@ class VoterStore extends ReduceStore {
   getAnalyticsUserDetails () {
     return {
       linkedPoliticianWeVoteId: this.getLinkedPoliticianWeVoteId(),
+      // signedInWithApple
       signedInEmail: this.getVoterIsSignedInWithEmail(),
       signedInPhone: this.getVoterIsSignedInWithPhone(),
       stateCode: this.getVoterStateCode(),
@@ -124,6 +125,20 @@ class VoterStore extends ReduceStore {
   getEmailAddressList () {
     const { emailAddressList } = this.getState();
     return emailAddressList;
+  }
+
+  getEmailAddressesVerifiedList () {
+    const { emailAddressList } = this.getState();
+    // console.log('getEmailAddressVerifiedList emailAddressList:', emailAddressList);
+    const emailList = [];
+    let oneEmail = {};
+    for (let i = 0; i < emailAddressList.length; ++i) {
+      oneEmail = emailAddressList[i];
+      if (oneEmail.normalized_email_address && oneEmail.email_ownership_is_verified === true) {
+        emailList.push(oneEmail.normalized_email_address);
+      }
+    }
+    return emailList;
   }
 
   getEmailAddressesVerifiedCount () {
@@ -1106,8 +1121,8 @@ class VoterStore extends ReduceStore {
           voter: { ...state.voter, facebook_profile_image_url_https: action.res.facebook_profile_image_url_https },
         };
 
-      case 'voterPhotoTooBigReset':
-        // console.log('VoterStore, voterPhotoTooBigReset');
+      case 'profilePhotoTooBigReset':
+        // console.log('VoterStore, profilePhotoTooBigReset');
         return {
           ...state,
           voterPhotoTooBig: false,

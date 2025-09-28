@@ -11,7 +11,7 @@ import stringContains from '../../common/utils/stringContains';
 import BallotStore from '../../stores/BallotStore';
 import VoterStore from '../../stores/VoterStore';
 import { getPageDetails } from '../../utils/lookupPageNameAndPageTypeDict';
-import { BallotAddress, ClickBlockWrapper, ContentWrapper, ElectionDateBelow, ElectionDateRight, ElectionNameBlock, ElectionNameH1, ElectionNameScrollContent, ElectionStateLabel, OverflowContainer, OverflowContent, VoteByBelowLabel, VoteByBelowWrapper, VoteByRightLabel, VoteByRightWrapper, } from '../Style/BallotTitleHeaderStyles';
+import { BallotAddress, ClickBlockWrapper, ContentWrapper, ElectionDateBelow, ElectionDateRight, ElectionNameBlock, ElectionNameH1, ElectionNameScrollContent, ElectionStateLabel, OverflowContainer, OverflowContent, VoteByBelowLabel, VoteByBelowWrapper, VoteByRightLabel, VoteByRightWrapper } from '../Style/BallotTitleHeaderStyles';
 
 
 class BallotTitleHeaderNationalPlaceholder extends Component {
@@ -64,27 +64,13 @@ class BallotTitleHeaderNationalPlaceholder extends Component {
   }
 
   showSelectBallotModalEditAddress = (buttonId) => {
-    console.log('Passed buttonId:', buttonId);
+    // console.log('Passed buttonId:', buttonId);
     const { linksOff } = this.props;
     // console.log('BallotTitleHeaderNationalPlaceholder showSelectBallotModalEditAddress linksOff:', linksOff);
     if (!linksOff) {
       const showEditAddress = true;
       const showSelectBallotModal = true;
       // this.props.toggleSelectBallotModal('', showEditAddress, false);
-      const address = VoterStore.getTextForMapSearch();
-      let city = '';
-      let region = '';
-      let zip = '';
-
-      if (address) {
-        const parsedAddress = parser.parseLocation(address);
-        if (parsedAddress) {
-          city = parsedAddress.city || '';
-          region = parsedAddress.state || '';
-          zip = parsedAddress.zip || '';
-        }
-      }
-
       const dataLayerObject = {
         actionDetails: {
           actionType: 'openModal',
@@ -93,15 +79,11 @@ class BallotTitleHeaderNationalPlaceholder extends Component {
         event: 'action',
         userDetails: VoterStore.getAnalyticsUserDetails(),
         pageDetails: getPageDetails(),
-        electionDetails: {
-          electionGeo: {
-            city,
-            region,
-            zip,
-          },
-        },
       };
-      console.log('dataLayerObject:', dataLayerObject);
+      const electionDetails = BallotStore.getAnalyticsElectionDetails();
+      if (electionDetails && electionDetails.electionDate) {
+        dataLayerObject.electionDetails = electionDetails;
+      }
       TagManager.dataLayer({ dataLayer: dataLayerObject });
 
       AppObservableStore.setShowSelectBallotModal(showSelectBallotModal, showEditAddress);
@@ -110,7 +92,7 @@ class BallotTitleHeaderNationalPlaceholder extends Component {
 
   render () {
     renderLog('BallotTitleHeaderNationalPlaceholder');  // Set LOG_RENDER_EVENTS to log all renders
-    const { centerText, electionDateBelow, electionDateMDY, electionName, linksOff, turnOffVoteByBelow } = this.props;
+    const { centerText, electionDateMDY, electionName, linksOff, turnOffVoteByBelow } = this.props;
     const {
       daysUntilElection,
       originalTextState,
@@ -181,7 +163,7 @@ class BallotTitleHeaderNationalPlaceholder extends Component {
                         {electionName}
                       </ElectionNameH1>
                       {(textForMapSearch && textForMapSearch !== '' && textForMapSearch.length > 1) ? (
-                        <BallotAddress
+                        <BallotAddress tabIndex={-1}
                           centerText={centerText}
                           className={linksOff ? '' : 'u-cursor--pointer'}
                           id="ballotTitleBallotAddress"
@@ -201,7 +183,7 @@ class BallotTitleHeaderNationalPlaceholder extends Component {
                           </span>
                         </BallotAddress>
                       ) : (
-                        <BallotAddress
+                        <BallotAddress tabIndex={-1}
                           allowTextWrap={allowTextWrap}
                           centerText={centerText}
                           className={linksOff ? '' : 'u-cursor--pointer'}
@@ -217,7 +199,6 @@ class BallotTitleHeaderNationalPlaceholder extends Component {
                       {(!turnOffVoteByBelow && !!(electionDateMDY)) && (
                         <VoteByBelowWrapper
                           centerText={centerText}
-                          electionDateBelow={electionDateBelow}
                         >
                           <VoteByBelowLabel>
                             Vote by
@@ -234,7 +215,7 @@ class BallotTitleHeaderNationalPlaceholder extends Component {
             </OverflowContainer>
             {(!!(electionDateMDY) && pigsCanFly) && (
               /* This currently doesn't work correctly and needs to be reviewed */
-              <VoteByRightWrapper electionDateBelow={electionDateBelow}>
+              <VoteByRightWrapper>
                 <VoteByRightLabel>
                   {daysUntilElection > 0 ? (
                     <>Vote by</>
@@ -263,7 +244,6 @@ class BallotTitleHeaderNationalPlaceholder extends Component {
 }
 BallotTitleHeaderNationalPlaceholder.propTypes = {
   centerText: PropTypes.bool,
-  electionDateBelow: PropTypes.bool,
   electionDateMDY: PropTypes.string,
   electionName: PropTypes.string,
   linksOff: PropTypes.bool,

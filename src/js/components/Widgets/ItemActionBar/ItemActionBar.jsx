@@ -280,7 +280,7 @@ class ItemActionBar extends PureComponent {
       pageDetails: getPageDetails(),
       destinationDetails: {
         destinationPageName: isHelpWinOrHelpDefeat,
-        destinationPageType: currentPage.pageType,
+        destinationPageType: 'chipIn',
         destinationPathname: currentPathname,
       },
     };
@@ -334,7 +334,7 @@ class ItemActionBar extends PureComponent {
           }}
           color="primary"
           id={`itemActionBarHelpThemWinButton-${externalUniqueId}-${localUniqueId}`}
-          onClick={() => this.openHelpWinOrDefeatModal('help_win', `itemActionBarHelpThemWinButton-${externalUniqueId}-${localUniqueId}`)}
+          onClick={() => this.openHelpWinOrDefeatModal('helpWinModal', `itemActionBarHelpThemWinButton-${externalUniqueId}-${localUniqueId}`)}
           variant="contained"
         >
           <HelpButtonLabel>
@@ -362,7 +362,7 @@ class ItemActionBar extends PureComponent {
           className={`${opposeHideInMobile ? 'd-none d-sm-block ' : ''}`}
           color="primary"
           id={`itemActionBarHelpDefeatButton-${externalUniqueId}-${localUniqueId}`}
-          onClick={() => this.openHelpWinOrDefeatModal('help_defeat', `itemActionBarHelpDefeatButton-${externalUniqueId}-${localUniqueId}`)}
+          onClick={() => this.openHelpWinOrDefeatModal('helpDefeatModal', `itemActionBarHelpDefeatButton-${externalUniqueId}-${localUniqueId}`)}
           variant="contained"
         >
           <HelpButtonLabel>
@@ -641,7 +641,9 @@ class ItemActionBar extends PureComponent {
       this.stopSupportingItem();
       return;
     }
-
+    if (transitioning) {
+      return;
+    }
     // console.log('supportItem setState');
     this.setState({
       isOpposeLocalState: false,
@@ -650,9 +652,28 @@ class ItemActionBar extends PureComponent {
     if (transitioning) {
       return;
     }
-
     // If the logic in this function decides to, show the "Sign in to save your choices" modal
     this.showChooseOrOpposeIntroModalDecision();
+
+    // Add console.log to verify we reach this point
+    console.log('About to push to dataLayer in supportItem');
+
+    const isSignedIn = VoterStore.getVoterIsSignedIn();
+    const dataLayerObject = {
+      actionDetails: {
+        actionType: isSignedIn ? 'favorite' : 'favoriteSignedOut',
+      },
+      event: 'action',
+      userDetails: VoterStore.getAnalyticsUserDetails(),
+      pageDetails: getPageDetails(),
+    };
+    if (ballotItemWeVoteId.includes('cand')) {
+      dataLayerObject.candidateDetails = CandidateStore.getAnalyticsCandidateDetails(ballotItemWeVoteId);
+    }
+    if (politicianWeVoteId) {
+      dataLayerObject.politicianDetails = PoliticianStore.getAnalyticsPoliticianDetails(politicianWeVoteId);
+    }
+    TagManager.dataLayer({ dataLayer: dataLayerObject });
 
     SupportActions.voterSupportingSave(ballotItemWeVoteId, ballotItemType, politicianWeVoteId);
     this.setState({

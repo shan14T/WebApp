@@ -1,12 +1,18 @@
-import { Button, FormControlLabel, Radio, RadioGroup } from '@mui/material';
+import { Button, FormControlLabel, Radio } from '@mui/material';
+import styled from 'styled-components';
+import TagManager from 'react-gtm-module';
 import withStyles from '@mui/styles/withStyles';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import styled from 'styled-components';
+import {
+  ColumnWrapper, CustomColumns, ProfilePicture, ProfilePictureOption,
+  ProfilePictureWrapper, RadioWrapper, SaveInnerWrapper, SaveOuterWrapper,
+  Separator,
+} from '../Style/ProfilePictureStyles';
 import VoterActions from '../../actions/VoterActions';
 import VoterPhotoUpload from '../../common/components/Settings/VoterPhotoUpload';
 import VoterStore from '../../stores/VoterStore';
-
+import { getPageDetails } from '../../utils/lookupPageNameAndPageTypeDict';
 
 class SettingsProfilePicture extends Component {
   constructor (props) {
@@ -45,14 +51,37 @@ class SettingsProfilePicture extends Component {
     });
   };
 
-  submitVoterPhotoSave = () => {
+  setProfileImageTypeCurrentlyActive (type) {
+    const { uploadedFileStaged } = this.state;
+    const isStaged = type === 'UPLOADED' ? 'true' : uploadedFileStaged;
+    this.setState({
+      profileImageTypeCurrentlyActive: type,
+      profileImageTypeCurrentlyActiveSet: true,
+      uploadedFileStaged: isStaged,
+    });
+  }
+
+  submitVoterPhotoSave = (buttonId) => {
     const { profileImageTypeCurrentlyActive } = this.state;
     const voterPhotoQueuedToSave = VoterStore.getVoterPhotoQueuedToSave();
     const voterPhotoQueuedToSaveSet = VoterStore.getVoterPhotoQueuedToSaveSet();
     if (voterPhotoQueuedToSaveSet || profileImageTypeCurrentlyActive) {
       VoterActions.voterPhotoSave(voterPhotoQueuedToSave, voterPhotoQueuedToSaveSet, profileImageTypeCurrentlyActive);
       VoterActions.voterPhotoQueuedToSave(undefined);
+
+      // Adding event data to dataLayer for Google Tag Manager
+      const dataLayerObject = {
+        event: 'action',
+        actionDetails: {
+          actionType: 'upload',
+          buttonId,
+        },
+        userDetails: VoterStore.getAnalyticsUserDetails(),
+        pageDetails: getPageDetails(),
+      };
+      TagManager.dataLayer({ dataLayer: dataLayerObject });
     }
+
     this.setState({
       voterPhotoQueuedToSaveSet: false,
       profileImageTypeCurrentlyActiveSet: false,
@@ -68,19 +97,9 @@ class SettingsProfilePicture extends Component {
     });
   }
 
-  setProfileImageTypeCurrentlyActive (type) {
-    const { uploadedFileStaged } = this.state;
-    const isStaged = type === 'UPLOADED' ? 'true' : uploadedFileStaged;
-    this.setState({
-      profileImageTypeCurrentlyActive: type,
-      profileImageTypeCurrentlyActiveSet: true,
-      uploadedFileStaged: isStaged,
-    });
-  }
-
   facebookClicked () {
     this.setState({
-      profileImageTypeCurrentlyActive: "FACEBOOK",
+      profileImageTypeCurrentlyActive: 'FACEBOOK',
       profileImageTypeCurrentlyActiveSet: true,
       uploadedFileStaged: false,
     });
@@ -150,7 +169,7 @@ class SettingsProfilePicture extends Component {
               color="primary"
               disabled={!voterPhotoQueuedToSaveSet && !profileImageTypeCurrentlyActiveSet}
               id="saveEditYourPhotoBottom"
-              onClick={this.submitVoterPhotoSave}
+              onClick={() => this.submitVoterPhotoSave('saveEditYourPhotoBottom')}
               variant="contained"
             >
               {(!voterPhotoQueuedToSaveSet && !profileImageTypeCurrentlyActiveSet) ? 'Photo saved' : 'Save photo'}
@@ -180,67 +199,6 @@ const styles = () => ({
     // width: 150,
   },
 });
-
-const ColumnWrapper = styled('div')`
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: space-between;
-`;
-
-const CustomColumns = styled('div', {
-  shouldForwardProp: (prop) => !['onlyOneOption'].includes(prop),
-})(({ onlyOneOption }) => (`
-  ${onlyOneOption ? 'width: 100% !important;' : 'width: 49% !important;'}
-`));
-
-const ProfilePictureOption = styled('div')`
-  align-items: flex-start;
-  border: 2px solid #e8e8e8;
-  border-radius: 3px;
-  display: flex !important;
-  flex-direction: column;
-  min-height: 250px;
-  padding: 4px 12px 12px 12px;
-  width: 100%;
-  margin-bottom: 3px;
-`;
-
-const ProfilePicture = styled('img')`
-  border-radius: 100px;
-  margin: 0 auto;
-  max-height: 100px;
-  max-width: 100px;
-`;
-
-const ProfilePictureWrapper = styled('div')`
-  display: flex;
-  justify-content: center;
-  margin-top: 9px;
-  margin-bottom: 26px;
-  width: 100%;
-`;
-
-const RadioWrapper = styled(RadioGroup)`
-`;
-
-const SaveInnerWrapper = styled('div')`
-  display: flex;
-`;
-
-const SaveOuterWrapper = styled('div')`
-  align-items: center;
-  display: flex;
-  justify-content: flex-end;
-  padding: 0 0 8px 0;
-`;
-
-const Separator = styled('div')`
-  width: 100%;
-  margin: 12px 0;
-  background: #e8e8e8;
-  height: 1px;
-`;
 
 const Wrapper = styled('div')`
 `;
