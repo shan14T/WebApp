@@ -9,7 +9,6 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wevote/WebApp.git",
-
   },
   "commentMay2021": "'production' forces minified libraries (especially react), and 'MINIFIED' passes all our code through the Terser minifier/mangler/compressor tool.",
   "scripts": {
