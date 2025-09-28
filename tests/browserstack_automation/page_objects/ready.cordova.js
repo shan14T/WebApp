@@ -5,7 +5,6 @@ class ReadyCordova extends Page {
     constructor() {
         super().title = 'Ready to Vote? - WeVote';
     }
-
     // Use a getter to return the platform-specific locator
     get wevoteLogo() {
         const locator = browser.isAndroid

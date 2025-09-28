@@ -4,7 +4,6 @@ import ReadyCordovaPage from '../page_objects/ready.cordova';
 //import ReadyCordovaPage from 'tests/browserstack_automation/page_objects/ready.cordova.js';
 
 const waitTime = 8000;
-
 /* eslint-disable no-undef */
 
 describe('ReadyPage', function () {
