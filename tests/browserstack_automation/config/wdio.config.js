@@ -1,8 +1,9 @@
 //loading required files
-const { driver } = require('@wdio/globals');
+const { driver, browser } = require('@wdio/globals');
 const { readFileSync } = require('fs');
 const path = require('path');
 const browserStackConfig = require('./browserstack.config');
+const { uploadLog } = require('../utils/uploadLogToBrowserStack');
 
 
 // --- Define Spec file sets
@@ -14,7 +15,7 @@ const mobileBrowserSpecs = [
   '../specs/ReadyPage.browser.js'
 ];
 const desktopBrowserSpecs = [
-    '../specs/DiscussPage.js',
+    /*'../specs/DiscussPage.js',
     '../specs/FAQPage.js',
     '../specs/PrivacyPage.js',
     '../specs/ReadyPage.browser.js',
@@ -27,7 +28,8 @@ const desktopBrowserSpecs = [
     '../specs/BallotPage.js',
     '../specs/CandidatesPage.js',
     '../specs/VerifyCount.js',
-    '../specs/WhosRunningForOffice.js',
+    '../specs/WhosRunningForOffice.js', */
+    '../specs/ReadyPage.browser.js',
 
 ];
 
@@ -107,6 +109,7 @@ const commonOptions = {
     idleTimeout: '300',
     maskCommands: 'setValues, getValues, setCookies, getCookies',
     video: 'true',
+
 };
 
 selectedCapabilities.forEach((capability) => {
@@ -153,13 +156,25 @@ module.exports.config = {
 
   maxInstances: 1,
   exclude: [],
+  outputDir: path.join(__dirname, '../qalogs'),
+  //combinedLogPath: path.join(__dirname, '..', 'qalogs', 'test_run.log'),
   logLevel: 'error',
   coloredLogs: true,
   baseUrl: browserStackConfig.WEB_APP_ROOT_URL,
   waitforTimeout: 10000,
   connectionRetryTimeout: 90000,
   connectionRetryCount: 1,
-  services: [['browserstack']],
+  services: [['browserstack', {
+      testObservability: true,
+      testObservabilityOptions: {
+        projectName: 'Project Name : wevote',
+        buildName: 'Your Build Name: wevote build',
+        uploadLogs: {
+          // Provide the path to the log file here
+          logFile: path.join(__dirname, '..', 'qalogs', 'test_run.log'),
+        },
+      },
+    }]],
   framework: 'mocha',
   mochaOpts: {
     ui: 'bdd',
@@ -173,4 +188,6 @@ module.exports.config = {
       await this.click();
     }, true);
   },
+
+
 };

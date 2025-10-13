@@ -1,0 +1,31 @@
+[
+    {
+      "browserName": "Safari",
+      "bstack:options": {
+        "deviceName": "iPhone 15",
+        "osVersion": "17",
+        "platformName": "ios",
+        "interactiveDebugging": "true"
+      }
+    },
+
+  {
+      "browserName": "chrome",
+      "bstack:options": {
+        "deviceName": "Samsung Galaxy S25 Ultra",
+        "osVersion": "15.0",
+        "platformName": "android",
+        "interactiveDebugging": "true"
+      }
+    },
+  {
+      "browserName": "chrome",
+      "bstack:options": {
+        "deviceName": "Google Pixel 9",
+        "osVersion": "16.0",
+        "platformName": "android",
+        "interactiveDebugging": "true"
+      }
+    }
+
+]
