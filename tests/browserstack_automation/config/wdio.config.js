@@ -3,7 +3,7 @@ const { driver, browser } = require('@wdio/globals');
 const { readFileSync } = require('fs');
 const path = require('path');
 const browserStackConfig = require('./browserstack.config');
-const { uploadLog } = require('../utils/uploadLogToBrowserStack');
+
 
 
 // --- Define Spec file sets
@@ -164,17 +164,7 @@ module.exports.config = {
   waitforTimeout: 10000,
   connectionRetryTimeout: 90000,
   connectionRetryCount: 1,
-  services: [['browserstack', {
-      testObservability: true,
-      testObservabilityOptions: {
-        projectName: 'Project Name : wevote',
-        buildName: 'Your Build Name: wevote build',
-        uploadLogs: {
-          // Provide the path to the log file here
-          logFile: path.join(__dirname, '..', 'qalogs', 'test_run.log'),
-        },
-      },
-    }]],
+  services: [['browserstack']],
   framework: 'mocha',
   mochaOpts: {
     ui: 'bdd',
