@@ -6,7 +6,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "16",
       "deviceName": "iPhone 14 Pro Max",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -26,7 +26,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "17",
       "deviceName": "iPhone 15",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -45,7 +45,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "17",
       "deviceName": "iPhone 15 Pro Max",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -64,7 +64,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "17",
       "deviceName": "iPhone 15 Pro",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -83,7 +83,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "18",
       "deviceName": "iPhone 14",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -101,7 +101,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "18",
       "deviceName": "iPhone 13",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -120,7 +120,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "18",
       "deviceName": "iPhone 16e",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -138,7 +138,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "18",
       "deviceName": "iPhone 16 Pro Max",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -156,7 +156,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "18",
       "deviceName": "iPhone 16 Pro",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -175,7 +175,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "18",
       "deviceName": "iPhone 16",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -193,7 +193,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "17",
       "deviceName": "iPad Pro 13 2024",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -211,7 +211,7 @@
       "app": "bs://594269826a367783be072e2fe9cc0896bc0e01cd",
       "platformVersion": "17",
       "deviceName": "iPad Pro 13 2024",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -230,7 +230,7 @@
       "app": "bs://9dcb02d84da3df01a1a5585416defa66718741b7",
       "platformVersion": "15.0",
       "deviceName": "Samsung Galaxy S25 Ultra",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -248,7 +248,7 @@
       "app": "bs://9dcb02d84da3df01a1a5585416defa66718741b7",
       "platformVersion": "16.0",
       "deviceName": "Google Pixel 9",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -266,7 +266,7 @@
       "app": "bs://9dcb02d84da3df01a1a5585416defa66718741b7",
       "platformVersion": "16.0",
       "deviceName": "Google Pixel 10 Pro XL",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -284,7 +284,7 @@
       "app": "bs://9dcb02d84da3df01a1a5585416defa66718741b7",
       "platformVersion": "16.0",
       "deviceName": "Google Pixel 10 Pro",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -302,7 +302,7 @@
       "app": "bs://9dcb02d84da3df01a1a5585416defa66718741b7",
       "platformVersion": "16.0",
       "deviceName": "Google Pixel 10",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -320,7 +320,7 @@
       "app": "bs://9dcb02d84da3df01a1a5585416defa66718741b7",
       "platformVersion": "15.0",
       "deviceName": "Google Pixel 9 Pro",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",
@@ -338,7 +338,7 @@
       "app": "bs://9dcb02d84da3df01a1a5585416defa66718741b7",
       "platformVersion": "15.0",
       "deviceName": "OnePlus 13R",
-      "autoWebview": true
+      "autoWebview": false
     },
     "bstack:options": {
       "appiumVersion": "2.0.1",

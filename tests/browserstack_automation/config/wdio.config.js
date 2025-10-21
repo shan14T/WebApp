@@ -1,9 +1,8 @@
 //loading required files
-const { driver, browser } = require('@wdio/globals');
+const { driver } = require('@wdio/globals');
 const { readFileSync } = require('fs');
 const path = require('path');
 const browserStackConfig = require('./browserstack.config');
-
 
 
 // --- Define Spec file sets
@@ -12,24 +11,36 @@ const cordovaSpecs = [
 
 ];
 const mobileBrowserSpecs = [
-  '../specs/ReadyPage.browser.js'
+  '../specs/DiscussPage.browser.js',
+    '../specs/FAQPage.browser.js',
+    '../specs/PrivacyPage.browser.js',
+    '../specs/ReadyPage.browser.js',
+    '../specs/TermsPage.browser.js',
+    '../specs/TopNavigation.browser.js',
+    '../specs/TopicsPage.browser.js',
+    '../specs/HowItWorks.browser.js',
+    '../specs/FooterLinks.browser.js',
+    '../specs/SignInPage.browser.js',
+    '../specs/BallotPage.browser.js',
+    '../specs/CandidatesPage.browser.js',
+    '../specs/VerifyCount.browser.js',
+    '../specs/WhosRunningForOffice.browser.js',
 ];
 const desktopBrowserSpecs = [
-    /*'../specs/DiscussPage.js',
-    '../specs/FAQPage.js',
-    '../specs/PrivacyPage.js',
+    '../specs/DiscussPage.browser.js',
+    '../specs/FAQPage.browser.js',
+    '../specs/PrivacyPage.browser.js',
     '../specs/ReadyPage.browser.js',
-    '../specs/TermsPage.js',
-    '../specs/TopNavigation.js',
-    '../specs/TopicsPage.js',
-    '../specs/HowItWorks.js',
-    '../specs/FooterLinks.js',
-    '../specs/SignInPage.js',
-    '../specs/BallotPage.js',
-    '../specs/CandidatesPage.js',
-    '../specs/VerifyCount.js',
-    '../specs/WhosRunningForOffice.js', */
-    '../specs/ReadyPage.browser.js',
+    '../specs/TermsPage.browser.js',
+    '../specs/TopNavigation.browser.js',
+    '../specs/TopicsPage.browser.js',
+    '../specs/HowItWorks.browser.js',
+    '../specs/FooterLinks.browser.js',
+    '../specs/SignInPage.browser.js',
+    '../specs/BallotPage.browser.js',
+    '../specs/CandidatesPage.browser.js',
+    '../specs/VerifyCount.browser.js',
+    '../specs/WhosRunningForOffice.browser.js',
 
 ];
 
@@ -109,7 +120,6 @@ const commonOptions = {
     idleTimeout: '300',
     maskCommands: 'setValues, getValues, setCookies, getCookies',
     video: 'true',
-
 };
 
 selectedCapabilities.forEach((capability) => {
@@ -156,8 +166,7 @@ module.exports.config = {
 
   maxInstances: 1,
   exclude: [],
-  outputDir: path.join(__dirname, '../qalogs'),
-  //combinedLogPath: path.join(__dirname, '..', 'qalogs', 'test_run.log'),
+   outputDir: path.join(__dirname, '../qalogs'),
   logLevel: 'error',
   coloredLogs: true,
   baseUrl: browserStackConfig.WEB_APP_ROOT_URL,
@@ -178,6 +187,4 @@ module.exports.config = {
       await this.click();
     }, true);
   },
-
-
 };
