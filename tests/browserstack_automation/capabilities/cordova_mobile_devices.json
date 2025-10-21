@@ -16,7 +16,6 @@
        "seleniumLogs": "true",
        "consoleLogs": "info",
        "deviceLogs" : "true"
-
     }
   },
 
