@@ -1,18 +1,26 @@
+//const { $, driver, expect, browser } = require('@wdio/globals');
+//const ReadyPage = require('../page_objects/ready.browser.js');
+//const SignIn = require('../page_objects/signin.browser');
+//const fs = require('fs');
+//const assert = require('assert');
+//const { error } = require('console');
+// Optional pages
+// const DonatePage = require('../page_objects/donate.page');
+// const signinPage = require('../page_objects/signin.page');
+// const webAppConfig = require('../../../src/js/config');
+
 import {$, driver, expect, browser } from '@wdio/globals';
-import ReadyPage from '../page_objects/ready.page';
-// import DonatePage from '../page_objects/donate.page';
+import ReadyPage from '../page_objects/ready.browser';
 import SignIn from '../page_objects/signin.browser';
-//import signinPage from '../page_objects/signin.page';
-// import webAppConfig from '../../../src/js/config';
 import { createRequire } from 'module';
 import { error } from 'console';
-//const require = createRequire(import.meta.url);
-
 import fs from 'fs';
 import assert from 'assert';
+//import signinPage from '../page_objects/signin.page';
+// import webAppConfig from '../../../src/js/config';
+// import DonatePage from '../page_objects/donate.page';
+//const require = createRequire(import.meta.url);
 const testDataPath = 'tests/browserstack_automation/testDataForScripts/';
-
-
 const waitTime = 8000;
 
 
