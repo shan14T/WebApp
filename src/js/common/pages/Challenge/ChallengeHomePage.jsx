@@ -4,49 +4,43 @@ import { Button } from '@mui/material';
 import withStyles from '@mui/styles/withStyles';
 import PropTypes from 'prop-types';
 import React, { Component, Suspense } from 'react';
+import TagManager from 'react-gtm-module';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import TagManager from 'react-gtm-module';
-import ChallengeInviteFriendsTopNavigation from '../../components/Navigation/ChallengeInviteFriendsTopNavigation';
-import DesignTokenColors from '../../components/Style/DesignTokenColors';
+import BallotActions from '../../../actions/BallotActions';
 import { PageContentContainer } from '../../../components/Style/pageLayoutStyles';
 import webAppConfig from '../../../config';
-import BallotActions from '../../../actions/BallotActions';
-import ChallengeParticipantStore from '../../stores/ChallengeParticipantStore';
-import ChallengeStore from '../../stores/ChallengeStore';
 import VoterStore from '../../../stores/VoterStore';
+import { cordovaBallotFilterTopMargin } from '../../../utils/cordovaOffsets';
+import { getPageDetails } from '../../../utils/lookupPageNameAndPageTypeDict';
+import { cordovaMarginTopOffset, MobileHeaderInnerContainer, NoInformationProvided } from '../../../utils/MobileHeaderStyles';
+import ChallengeAbout from '../../components/Challenge/ChallengeAbout';
+import ThanksForViewingChallenge from '../../components/Challenge/ThanksForViewingChallenge';
+import ChallengeInviteeListRoot from '../../components/ChallengeInviteeListRoot/ChallengeInviteeListRoot';
+import ChallengeParticipantListRoot from '../../components/ChallengeParticipantListRoot/ChallengeParticipantListRoot';
+import ChallengeHeaderSimple from '../../components/Navigation/ChallengeHeaderSimple';
+import ChallengeInviteFriendsTopNavigation from '../../components/Navigation/ChallengeInviteFriendsTopNavigation';
 import CompleteYourProfileModalController from '../../components/Settings/CompleteYourProfileModalController';
-import {
-  CampaignDescriptionDesktop, CampaignDescriptionDesktopWrapper, CampaignDescriptionWrapper,
-  CampaignSubSectionSeeAll, CampaignSubSectionTitle, CampaignSubSectionTitleWrapper,
-  CommentsListWrapper, DetailsSectionDesktopTablet, DetailsSectionMobile, SupportButtonFooterWrapperAboveFooterButtons, SupportButtonPanel,
-} from '../../components/Style/CampaignDetailsStyles';
-import { ChallengeDescription } from '../../components/Style/ChallengeCardStyles';
+import { CampaignDescriptionDesktop, CampaignDescriptionDesktopWrapper, CampaignDescriptionWrapper, CampaignSubSectionSeeAll, CampaignSubSectionTitle, CampaignSubSectionTitleWrapper, CommentsListWrapper, DetailsSectionDesktopTablet, DetailsSectionMobile, SupportButtonFooterWrapperAboveFooterButtons, SupportButtonPanel } from '../../components/Style/CampaignDetailsStyles';
 import { EditIndicator, IndicatorButtonWrapper, IndicatorRow } from '../../components/Style/CampaignIndicatorStyles';
+import { ChallengeDescription } from '../../components/Style/ChallengeCardStyles';
+import standardBoxShadow from '../../components/Style/standardBoxShadow';
 import { PageWrapper } from '../../components/Style/stepDisplayStyles';
 import DelayedLoad from '../../components/Widgets/DelayedLoad';
 import LinkToAdminTools from '../../components/Widgets/LinkToAdminTools';
 import AppObservableStore, { messageService } from '../../stores/AppObservableStore';
+import ChallengeParticipantStore from '../../stores/ChallengeParticipantStore';
+import ChallengeStore from '../../stores/ChallengeStore';
+import ShareStore from '../../stores/ShareStore';
 import apiCalming from '../../utils/apiCalming';
 import { getChallengeValuesFromIdentifiers, retrieveChallengeFromIdentifiersIfNeeded } from '../../utils/challengeUtils';
 import historyPush from '../../utils/historyPush';
-import { isCordova, isWebApp } from '../../utils/isCordovaOrWebApp';
+import { isWebApp } from '../../utils/isCordovaOrWebApp';
 import keepHelpingDestination from '../../utils/keepHelpingDestination';
-import { cordovaOffsetLog, renderLog } from '../../utils/logging';
+import { renderLog } from '../../utils/logging';
 import returnFirstXWords from '../../utils/returnFirstXWords';
 import saveCampaignSupportAndGoToNextPage from '../../utils/saveCampaignSupportAndGoToNextPage';
-import standardBoxShadow from '../../components/Style/standardBoxShadow';
-import { cordovaBallotFilterTopMargin } from '../../../utils/cordovaOffsets';
-import { headroomWrapperOffset } from '../../../utils/cordovaCalculatedOffsets';
-import { getPageKey } from '../../../utils/cordovaPageUtils';
-import ChallengeAbout from '../../components/Challenge/ChallengeAbout';
-import ChallengeParticipantListRoot from '../../components/ChallengeParticipantListRoot/ChallengeParticipantListRoot';
-import ChallengeInviteeListRoot from '../../components/ChallengeInviteeListRoot/ChallengeInviteeListRoot';
-import ThanksForViewingChallenge from '../../components/Challenge/ThanksForViewingChallenge';
-import ShareStore from '../../stores/ShareStore';
-import ChallengeHeaderSimple from '../../components/Navigation/ChallengeHeaderSimple';
-import { getPageDetails } from '../../../utils/lookupPageNameAndPageTypeDict';
 
 const ChallengeCardForList = React.lazy(() => import(/* webpackChunkName: 'ChallengeCardForList' */ '../../components/ChallengeListRoot/ChallengeCardForList'));
 // const ChallengeCommentsList = React.lazy(() => import(/* webpackChunkName: 'ChallengeCommentsList' */ '../../components/Challenge/ChallengeCommentsList'));
@@ -59,33 +53,15 @@ const ReadMore = React.lazy(() => import(/* webpackChunkName: 'ReadMore' */ '../
 const futureFeaturesDisabled = true;
 const nextReleaseFeaturesEnabled = webAppConfig.ENABLE_NEXT_RELEASE_FEATURES === undefined ? false : webAppConfig.ENABLE_NEXT_RELEASE_FEATURES;
 
-function marginTopOffset (scrolledDown) {
-  // if (isIOSAppOnMac()) {
-  //   return '44px';
-  // } else if (isIPad()) {
-  //   return '12px';
-  // } else if (isIOS()) {
-  //   return '85px';
-  // } else if (isWebApp() && isMobileScreenSize()) {
-  //   if (scrolledDown) {
-  //     return '54px';
-  //   } else {
-  //     return '64px';
-  //   }
+function marginTopOffsetChallenge (scrolledDown) {
   if (isWebApp()) {
     if (scrolledDown) {
       return '-6px';
     } else {
       return '39px';
     }
-  } else if (isCordova()) {
-    // Calculated approach Nov 2022
-    const offset = `${headroomWrapperOffset(true)}px`;
-    cordovaOffsetLog(`ChallengeHomePage HeadroomWrapper offset: ${offset}, page: ${getPageKey()}`);
-    return offset;
-    // end calculated approach
   }
-  return 0;
+  return cordovaMarginTopOffset('ChallengeHomePage');
 }
 
 
@@ -361,15 +337,15 @@ class ChallengeHomePage extends Component {
     const {
       challengeDescription,
       challengePhotoLargeUrl,
-      challengePhotoMediumUrl,
+      // challengePhotoMediumUrl,
       challengeSEOFriendlyPath,
       challengeTitle,
       challengeWeVoteId,
       finalElectionDateInPast,
-      isBlockedByWeVote,
-      isBlockedByWeVoteReason,
-      isSupportersCountMinimumExceeded,
-      weVoteHostedProfileImageUrlLarge,
+      // isBlockedByWeVote,
+      // isBlockedByWeVoteReason,
+      // isSupportersCountMinimumExceeded,
+      // weVoteHostedProfileImageUrlLarge,
     } = getChallengeValuesFromIdentifiers(challengeSEOFriendlyPathFromParams, challengeWeVoteIdFromParams);
     // console.log('onChallengeStoreChange AFTER getChallengeValuesFromIdentifiers challengeWeVoteId: ', challengeWeVoteId);
     let pathToUseWhenProfileComplete;
@@ -379,6 +355,7 @@ class ChallengeHomePage extends Component {
       });
       pathToUseWhenProfileComplete = `/${challengeSEOFriendlyPath}/+/why-do-you-support`;
     } else if (challengeWeVoteId) {
+      // eslint-disable-next-line no-unused-vars
       pathToUseWhenProfileComplete = `/++/${challengeWeVoteId}/why-do-you-support`;
     }
     if (challengeWeVoteId) {
@@ -396,14 +373,14 @@ class ChallengeHomePage extends Component {
       challengeDescription,
       challengeDescriptionLimited,
       challengePhotoLargeUrl,
-      challengePhotoMediumUrl,
+      // challengePhotoMediumUrl,
       challengeTitle,
       finalElectionDateInPast,
-      isBlockedByWeVote,
-      isBlockedByWeVoteReason,
-      isSupportersCountMinimumExceeded,
-      pathToUseWhenProfileComplete,
-      weVoteHostedProfileImageUrlLarge,
+      // isBlockedByWeVote,
+      // isBlockedByWeVoteReason,
+      // isSupportersCountMinimumExceeded,
+      // pathToUseWhenProfileComplete,
+      // weVoteHostedProfileImageUrlLarge,
     });
   }
 
@@ -567,9 +544,9 @@ class ChallengeHomePage extends Component {
         </Helmet>
         <PageWrapper>
           <DetailsSectionMobile className="u-show-mobile">
-            <MobileHeaderOuterContainer id="challengeHeaderContainer" scrolledDown={scrolledDown}>
+            <ChallengeMobileHeaderOuterContainer id="challengeHeaderContainer" scrolledDown={scrolledDown}>
               <MobileHeaderInnerContainer>
-                <MobileHeaderContentContainer>
+                <ChallengeMobileHeaderContentContainer>
                   <ChallengeHeaderSimple
                     challengeBasePath={this.getChallengeBasePath()}
                     challengePhotoLargeUrl={challengePhotoLargeUrl}
@@ -578,9 +555,9 @@ class ChallengeHomePage extends Component {
                     // goToChallengeHome={this.goToChallengeHome}
                     hideCloseIcon
                   />
-                </MobileHeaderContentContainer>
+                </ChallengeMobileHeaderContentContainer>
               </MobileHeaderInnerContainer>
-            </MobileHeaderOuterContainer>
+            </ChallengeMobileHeaderOuterContainer>
             <ChallengeCardForList
               challengeWeVoteId={challengeWeVoteIdForDisplay}
               titleLinkOff
@@ -861,7 +838,9 @@ const slideDown = keyframes`
   }
 `;
 
-const MobileHeaderContentContainer = styled('div')(({ theme }) => (`
+// Please do not copy styles -- centralize them somewhere, so that same-named styles don't diverge,
+// Same-named styles results in lengthy debugging in Cordova
+const ChallengeMobileHeaderContentContainer = styled('div')(({ theme }) => (`
   // padding: 15px 15px 0 15px;
   margin: ${() => cordovaBallotFilterTopMargin()} auto 0 auto;
   position: relative;
@@ -874,12 +853,12 @@ const MobileHeaderContentContainer = styled('div')(({ theme }) => (`
   }
 `));
 
-const MobileHeaderOuterContainer = styled('div', {
+const ChallengeMobileHeaderOuterContainer = styled('div', {
   shouldForwardProp: (prop) => !['scrolledDown'].includes(prop),
 })(({ scrolledDown }) => (`
   // animation: ${slideDown} 300ms ease-in;  // Not currently working -- needs debugging
   // transition: visibility 1s linear;  // Not currently working -- needs debugging
-  margin-top: ${marginTopOffset(scrolledDown)};
+  margin-top: ${marginTopOffsetChallenge(scrolledDown)};
   width: 100%;
   background-color: #fff;
   ${scrolledDown ? 'border-bottom: 1px solid #aaa' : ''};
@@ -893,16 +872,6 @@ const MobileHeaderOuterContainer = styled('div', {
   right: 0;
 `));
 
-const MobileHeaderInnerContainer = styled('div')`
-  display: flex;
-  justify-content: center;
-  width: 100%;
-`;
-
-const NoInformationProvided = styled('div')`
-  color: 1px solid ${DesignTokenColors.neutralUI100};
-  font-size: 12px;
-`;
 
 const JoinChallengeButtonWrapper = styled('div')`
   // display: flex;

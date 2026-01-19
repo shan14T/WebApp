@@ -4,9 +4,9 @@ import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import PropTypes from 'prop-types';
 import React, { Component, Suspense } from 'react';
+import TagManager from 'react-gtm-module';
 import { Helmet } from 'react-helmet-async';
 import styled from 'styled-components';
-import TagManager from 'react-gtm-module';
 import ActivityActions from '../../actions/ActivityActions';
 import AnalyticsActions from '../../actions/AnalyticsActions';
 import BallotActions from '../../actions/BallotActions';
@@ -21,22 +21,23 @@ import SnackNotifier, { openSnackbar } from '../../common/components/Widgets/Sna
 import AppObservableStore, { messageService } from '../../common/stores/AppObservableStore';
 import CampaignStore from '../../common/stores/CampaignStore';
 import apiCalming from '../../common/utils/apiCalming';
-import { chipLabelText, isAndroidSizeWide, isIOSAppOnMac, isIPad11in, isIPadGiantSize, isIPadMini, isIPhone6p1in } from '../../common/utils/cordovaUtils';
+import { chipLabelText, isAndroidSizeWide, isIOSAppOnMac, isIPad, isIPadGiantSize, isIPhone6p1in } from '../../common/utils/cordovaUtils';
 import getBooleanValue from '../../common/utils/getBooleanValue';
 import historyPush from '../../common/utils/historyPush';
 import { isCordova, isWebApp } from '../../common/utils/isCordovaOrWebApp';
 import isMobileScreenSize from '../../common/utils/isMobileScreenSize';
 import Cookies from '../../common/utils/js-cookie/Cookies';
-import { cordovaOffsetLog, renderLog } from '../../common/utils/logging';
+import { renderLog } from '../../common/utils/logging';
 import BallotItemCompressed from '../../components/Ballot/BallotItemCompressed';
 import BallotStatusMessage from '../../components/Ballot/BallotStatusMessage';
 import BallotTitleHeader from '../../components/Ballot/BallotTitleHeader';
 import BallotDecisionsTabs from '../../components/Navigation/BallotDecisionsTabs';
 import BallotShowAllItemsFooter from '../../components/Navigation/BallotShowAllItemsFooter';
 import { ballotWrapperBodyStyles } from '../../components/Style/BallotTitleHeaderStyles';
-import { DualHeaderContainer, HeaderContentContainer, HeaderContentOuterContainer, PageContentContainer } from '../../components/Style/pageLayoutStyles';
+import { DualHeaderContainer, getTopOffsetDueToHeadroomWrapper, HeaderContentContainer, HeaderContentOuterContainer, PageContentContainer } from '../../components/Style/pageLayoutStyles';
 import webAppConfig from '../../config';
 import CordovaPageConstants from '../../constants/CordovaPageConstants';
+import VoterConstants from '../../constants/VoterConstants';
 import BallotStore from '../../stores/BallotStore';
 import ElectionStore from '../../stores/ElectionStore';
 import IssueStore from '../../stores/IssueStore';
@@ -45,17 +46,16 @@ import TwitterStore from '../../stores/TwitterStore';
 import VoterGuideStore from '../../stores/VoterGuideStore';
 import VoterStore from '../../stores/VoterStore';
 import { dumpCssFromId } from '../../utils/appleSiliconUtils';
-import { headroomWrapperOffset, setBallotDualHeaderContentContainerTopOffset } from '../../utils/cordovaCalculatedOffsets';
-import { getPageKey } from '../../utils/cordovaPageUtils';
+import { outerHeightOfDualHeaderContainer } from '../../utils/cordovaCalculatedOffsets';
 import { pageEnumeration } from '../../utils/cordovaUtilsPageEnumeration';
 import isMobile from '../../utils/isMobile';
 // Lint is not smart enough to know that lazyPreloadPages will not attempt to preload/reload this page
 // eslint-disable-next-line import/no-cycle
 import lazyPreloadPages from '../../utils/lazyPreloadPages';
+import lookupPageNameAndPageTypeDict, { getPageDetails } from '../../utils/lookupPageNameAndPageTypeDict';
 import mapCategoryFilterType from '../../utils/map-category-filter-type';
 import showBallotDecisionsTabs from '../../utilsApi/showBallotDecisionsTabs';
 import { checkShouldUpdate, formatVoterBallotList } from './utils/ballotUtils';
-import lookupPageNameAndPageTypeDict from '../../utils/lookupPageNameAndPageTypeDict';
 
 const CompleteYourProfileOnBallot = React.lazy(() => import(/* webpackChunkName: 'CompleteYourProfile' */ '../../components/CompleteYourProfile/CompleteYourProfileOnBallot'));
 const DelayedLoad = React.lazy(() => import(/* webpackChunkName: 'DelayedLoad' */ '../../common/components/Widgets/DelayedLoad'));
@@ -125,7 +125,6 @@ class Ballot extends Component {
   }
 
   componentDidMount () {
-    setBallotDualHeaderContentContainerTopOffset(VoterStore.getVoterIsSignedIn());
     const { location: { pathname: currentPathname } } = window;
     // console.log('Ballot componentDidMount, Current pathname:', currentPathname);
     const ballotBaseUrl = '/ballot';
@@ -363,14 +362,13 @@ class Ballot extends Component {
       navigator.serviceWorker.register('/sw.js');
       window.serviceWorkerLoaded = true;
     }
-    const currentPage = lookupPageNameAndPageTypeDict(currentPathname);
+
     const dataLayerObject = {
-      event: 'landing',
-      pageDetails: {
-        pageName: currentPage.pageName,
-        pageType: currentPage.pageType,
-        pathname: currentPathname,
+      actionDetails: {
+        actionType: 'landing',
       },
+      event: 'landing',
+      pageDetails: getPageDetails(),
       userDetails: VoterStore.getAnalyticsUserDetails(),
     };
     TagManager.dataLayer({ dataLayer: dataLayerObject });
@@ -439,7 +437,7 @@ class Ballot extends Component {
   shouldComponentUpdate (nextProps, nextState) {
     // This lifecycle method tells the component to NOT render if componentWillReceiveProps didn't see any changes
     if (window) {
-      return true;   // TODO: remove this hack
+      return true;
     }
     return checkShouldUpdate(this.state, nextState);
   }
@@ -1125,19 +1123,6 @@ class Ballot extends Component {
     }
   }
 
-  marginTopOffset () {
-    if (isWebApp()) {
-      return '50px';
-    } else if (isCordova()) {
-      // Calculated approach Nov 2022
-      const offset = `${headroomWrapperOffset(true)}px`;
-      cordovaOffsetLog(`BallotTitleHeaderContainer HeadroomWrapper offset: ${offset}, page: ${getPageKey()}`);
-      return offset;
-      // end calculated approach
-    }
-    return 0;
-  }
-
   updateOfficeDisplayUnfurledTracker (weVoteId, status) {
     const { ballotItemUnfurledTracker } = this.state;
     const newBallotItemUnfurledTracker = { ...ballotItemUnfurledTracker, [weVoteId]: status };
@@ -1352,23 +1337,26 @@ class Ballot extends Component {
       widthOverride = { width: 'unset' };
     }
 
+    const howItWorksWatched = VoterStore.getInterfaceFlagState(VoterConstants.HOW_IT_WORKS_WATCHED);
+    const personalizedScoreIntroCompleted = VoterStore.getInterfaceFlagState(VoterConstants.PERSONALIZED_SCORE_INTRO_COMPLETED);
+    const voterIsSignedIn = VoterStore.getVoterIsSignedIn();
+    const profileStepsCompleted = (howItWorksWatched && personalizedScoreIntroCompleted && voterIsSignedIn);
+    const showCompleteYourProfile = isWebApp() && !profileStepsCompleted;
+
     let isFirstBallotItem = false;
     let numberOfBallotItemsDisplayed = 0;
     let showLoadingText = true;
     let searchTextString = '';
-    const showCompleteYourProfile = isWebApp();
     let paddingTop = '';
-    if (isIPadMini()) {
-      paddingTop = '18%';
-    } else if (isIPad11in()) {
-      paddingTop = '12%';
+    if (isIPad()) {
+      paddingTop = `${outerHeightOfDualHeaderContainer()}px`;
     }
 
     return (
       <div className="ballot_root">
         <Suspense fallback={<LoadingWheelComp />}>
           <SnackNotifier />
-          <DualHeaderContainer id="ballot" scrolledDown={scrolledDown}>
+          <DualHeaderContainer id="ballot" scrolledDown={scrolledDown} topOffset={getTopOffsetDueToHeadroomWrapper()}>
             <HeaderContentOuterContainer>
               <HeaderContentContainer>
                 <div className="container-fluid">
@@ -1395,7 +1383,7 @@ class Ballot extends Component {
                         )}
                       </Helmet>
                       <header className="ballot__header__group">
-                        <BallotTitleHeaderContainer marginTopOffset={this.marginTopOffset()}>
+                        <BallotTitleHeaderContainer>
                           <BallotTitleHeader
                             showShareButton
                             toggleSelectBallotModal={this.toggleSelectBallotModal}
@@ -1842,12 +1830,10 @@ const BallotFilterRow = styled('div')`
   // margin-left: {() => (isWebApp() && !isMobileScreenSize() ? 'calc((100vw - 975px)/2)' : '')};
 `;
 
-const BallotTitleHeaderContainer = styled('div', {
-  shouldForwardProp: (prop) => !['marginTopOffset'].includes(prop),
-})(({ marginTopOffset }) => (`
-  margin-top: ${marginTopOffset};
+const BallotTitleHeaderContainer = styled('div')`
+  margin-top: 50px;
   transition: ${isWebApp() ? 'all 150ms ease-in' : ''};
-`));
+`;
 
 const CompleteYourProfileWrapper = styled('div')`
   margin-top: 60px;

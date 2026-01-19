@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import React, { Component, Suspense } from 'react';
 import styled from 'styled-components';
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger';
+import TagManager from 'react-gtm-module';
 import Tooltip from 'react-bootstrap/Tooltip';
 import VoterActions from '../../actions/VoterActions';
 import LoadingWheel from '../../common/components/Widgets/LoadingWheel';
@@ -19,10 +20,10 @@ import { FirstRowPhoneOrEmail, SecondRowPhoneOrEmail, SecondRowPhoneOrEmailDiv, 
 import { ButtonContainerHorizontal } from '../Welcome/sectionStyles';
 import SettingsVerifySecretCode from '../../common/components/Settings/SettingsVerifySecretCode';
 import { validateEmail } from '../../utils/regex-checks';
+import { getPageDetails } from '../../utils/lookupPageNameAndPageTypeDict';
 
 const OpenExternalWebSite = React.lazy(() => import(/* webpackChunkName: 'OpenExternalWebSite' */ '../../common/components/Widgets/OpenExternalWebSite'));
 
-/* global $ */
 let shiftTabKeyPressed = false;
 class VoterEmailAddressEntry extends Component {
   constructor (props) {
@@ -70,7 +71,7 @@ class VoterEmailAddressEntry extends Component {
     VoterActions.voterEmailAddressRetrieve();
     if (this.emailInputRef && this.emailInputRef.current) {
       this.emailInputRef.current.blur();
-    };
+    }
     this._isMounted = true;
   }
 
@@ -321,9 +322,8 @@ class VoterEmailAddressEntry extends Component {
 
   onKeyDown = (event) => {
     // console.log('onKeyDown, event.keyCode:', event.keyCode);
-    const ENTER_KEY_CODE = 13;
     const SPACE_KEY_CODE = 32;
-    const keyCodesToBlock = [ENTER_KEY_CODE, SPACE_KEY_CODE];
+    const keyCodesToBlock = [SPACE_KEY_CODE];
     if (event.key === 'Tab' && event.shiftKey) {
       shiftTabKeyPressed = true;
     } else {
@@ -371,6 +371,22 @@ class VoterEmailAddressEntry extends Component {
         voterEmailAddress,
       });
     }
+  };
+
+  pushDataLayer = (buttonId, actionType) => {
+    const dataLayerObject = {
+      actionDetails: {
+        actionType,
+        buttonId,
+      },
+      event: 'click',
+      verifyDetails: {
+        verifyMethod: 'email',
+      },
+      pageDetails: getPageDetails(),
+      userDetails: VoterStore.getAnalyticsUserDetails(),
+    };
+    TagManager.dataLayer({ dataLayer: dataLayerObject });
   };
 
   render () {
@@ -452,7 +468,7 @@ class VoterEmailAddressEntry extends Component {
     );
 
     const enterEmailHtml = hideSignInWithEmailForm ? null : (
-      <div style={{ paddingTop: 10 }}>
+      <div style={isWebApp() ? { paddingTop: 10 } : { paddingTop: 10 }}>
         <form className="form-inline">
           <TextField
             autoComplete="off"
@@ -495,10 +511,15 @@ class VoterEmailAddressEntry extends Component {
               </CancelButtonContainer>
               <ButtonContainerHorizontal>
                 <Button
+                  type="submit"
                   color="primary"
                   disabled={disableEmailVerificationButton || signInCodeEmailSentAndWaitingForResponse}
                   id="voterEmailAddressEntrySendCode"
-                  onClick={this.sendSignInCodeEmail}
+                  onClick={(e) => {
+                    const buttonId = e.target.id;
+                    this.sendSignInCodeEmail();
+                    this.pushDataLayer(buttonId, 'sendVerification');
+                  }}
                   onAnimationEnd={this.onAnimationEndSend}
                   variant="contained"
                 >

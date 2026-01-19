@@ -123,6 +123,16 @@ class FriendsTabs extends Component {
     return href.replace('/friends/', '');
   }
 
+  friendsTabSx = () => {
+    if (isIPhoneMiniOrSmaller()) {
+      return {
+        fontSize: '14.5px',
+        padding: '8px',
+      };
+    }
+    return {};
+  }
+
   resetDefaultTabForMobile () {
     const tabItem = this.getPageFromUrl();
 
@@ -182,6 +192,7 @@ class FriendsTabs extends Component {
               onClick={() => {
                 this.handleNavigation('/friends/requests');
               }}
+              sx={this.friendsTabSx()}
             />
             <FriendsNavTab
               value="suggested"
@@ -189,6 +200,7 @@ class FriendsTabs extends Component {
               onClick={() => {
                 this.handleNavigation('/friends/suggested');
               }}
+              sx={this.friendsTabSx()}
             />
             {this.getSelectedTab() === 'invite' && (
               <FriendsNavTab
@@ -205,6 +217,7 @@ class FriendsTabs extends Component {
                 onClick={() => {
                   this.handleNavigation('/friends/invite');
                 }}
+                sx={this.friendsTabSx()}
               />
             )}
             <FriendsNavTab
@@ -221,6 +234,7 @@ class FriendsTabs extends Component {
               onClick={() => {
                 this.handleNavigation('/friends/current');
               }}
+              sx={this.friendsTabSx()}
             />
             <FriendsNavTab
               value="remind"
@@ -236,6 +250,7 @@ class FriendsTabs extends Component {
               onClick={() => {
                 this.handleNavigation('/friends/remind');
               }}
+              sx={this.friendsTabSx()}
             />
           </Tabs>
         </div>
@@ -289,6 +304,10 @@ const RequestsNavTab = muiStyled(Tab)({
   width: 'fit-content !important',
   height: '40px !important',
   maxHeight: '40px !important',
+  // ...(isIPhoneMiniOrSmaller()  && {
+  //   fontSize: '14.5px',
+  //   padding: '8px',
+  // }),
 });
 
 export default withStyles(styles)(FriendsTabs);

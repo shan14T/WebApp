@@ -6,16 +6,15 @@ import React, { Component, Suspense } from 'react';
 import OrganizationActions from '../../actions/OrganizationActions';
 import VoterGuideActions from '../../actions/VoterGuideActions';
 import LazyImage from '../../common/components/LazyImage';
+import AppObservableStore, { messageService } from '../../common/stores/AppObservableStore';
 import apiCalming from '../../common/utils/apiCalming';
-import { hasDynamicIsland, isIOS, isIOSAppOnMac, isIPad } from '../../common/utils/cordovaUtils';
+import { heightOfCordovaSpacer, isIOSAppOnMac, isIPad } from '../../common/utils/cordovaUtils';
 import historyPush from '../../common/utils/historyPush';
 import { normalizedHref } from '../../common/utils/hrefUtils';
 import { isCordova, isWebApp } from '../../common/utils/isCordovaOrWebApp';
-import isMobileScreenSize from '../../common/utils/isMobileScreenSize';
 import { renderLog } from '../../common/utils/logging';
 import stringContains from '../../common/utils/stringContains';
 import voterPhoto from '../../common/utils/voterPhoto';
-import AppObservableStore, { messageService } from '../../common/stores/AppObservableStore';
 import VoterStore from '../../stores/VoterStore';
 import { dumpCssFromId } from '../../utils/appleSiliconUtils';
 import { avatarGeneric } from '../../utils/applicationUtils';
@@ -172,11 +171,13 @@ class HeaderBackTo extends Component {
   }
 
   goToSettings () {
-    if (isMobileScreenSize()) {
-      historyPush('/settings/hamburger');
-    } else {
-      historyPush('/settings/profile');
-    }
+    console.log('goToSettings IN HeaderBackTo historyPush');
+    AppObservableStore.setDrawerOpen('headerProfileDrawerOpen', true);   // 11/20/25 Strongly suspect that this is right, and what follows is wrong
+    // if (isMobileScreenSize()) {
+    //   historyPush('/settings/hamburger');
+    // } else {
+    //   historyPush('/settings/profile');
+    // }
   }
 
   closeSignInModal () {
@@ -199,10 +200,7 @@ class HeaderBackTo extends Component {
     const voterPhotoUrlMedium = voterPhoto(voter);
     const pathname = normalizedHref();
     const shareButtonInHeader = pathname && stringContains('/office', pathname.toLowerCase());
-    let pad = isIOS() ? '34px 15px 0 0' : '0 15px 0 0';
-    if (hasDynamicIsland()) {
-      pad = '56px 15px 0 0';
-    }
+    const pad = `${heightOfCordovaSpacer(true)} 15px 0 0`;
     const cordovaStyles = {
       marginLeft: 0,
       padding: pad,

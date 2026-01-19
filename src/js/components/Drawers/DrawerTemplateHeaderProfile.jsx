@@ -4,12 +4,11 @@ import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { hasIPhoneNotch } from '../../common/utils/cordovaUtils';
-import { renderLog } from '../../common/utils/logging';
-import { cordovaDrawerTopMargin } from '../../utils/cordovaOffsets';
-import { DrawerHeaderAnimateDownInnerContainer, DrawerHeaderAnimateDownOuterContainer, DrawerHeaderWrapper, DrawerTitle } from '../Style/drawerLayoutStyles';
 import DesignTokenColors from '../../common/components/Style/DesignTokenColors';
 import AppObservableStore, { messageService } from '../../common/stores/AppObservableStore';
+import { hasCordovaNotch, heightOfCordovaSpacer, isIPadSmallerThan13 } from '../../common/utils/cordovaUtils';
+import { renderLog } from '../../common/utils/logging';
+import { CloseDrawerIconWrapper, DrawerHeaderAnimateDownInnerContainer, DrawerHeaderAnimateDownOuterContainer, DrawerHeaderWrapper, DrawerTitle } from '../Style/drawerLayoutStyles';
 
 const DrawerTemplateHeaderProfile = (props) => {
   const { classes, drawerId, drawerOpenGlobalVariableName, headerFixedJsx, headerTitleJsx, mainContentJsx, onDrawerClose } = props;
@@ -34,19 +33,27 @@ const DrawerTemplateHeaderProfile = (props) => {
   };
 
   const onAppObservableStoreChange = useCallback(() => {
-    setDrawerOpen(AppObservableStore.getDrawerOpen(drawerOpenGlobalVariableName));
+    const set = AppObservableStore.getDrawerOpen(drawerOpenGlobalVariableName);
+    if (set) {
+      setDrawerOpen(true);
+      setTimeout(() => {
+        if (isIPadSmallerThan13() && props?.drawerId === 'headerProfileDrawer') {
+          const elements = document.querySelectorAll('[class*="DrawerTemplateHeaderProfile-drawer"]');
+          if (elements.length) {
+            // Profile drawer layout for smaller iPads, makes desktop width assumptions
+            // so just make them 100% for now (October 2025).
+            elements[0].style.width = '100%';
+          }
+        }
+      }, 100);
+    } else {
+      setDrawerOpen(false);
+    }
   }, [setDrawerOpen]);
 
   const onDrawerCloseLocal = () => {
     AppObservableStore.setDrawerOpen(drawerOpenGlobalVariableName, false);
-    // setAppContextValue('profileDrawerOpen', false);
-    // setAppContextValue('profileDrawerPerson', {});
-    // setAppContextValue('profileDrawerPersonId', 0);
-    if (onDrawerClose) {
-      onDrawerClose();
-    }
-    // setAppContextValue('profileDrawerPerson', {});
-    // setAppContextValue('profileDrawerPersonId', 0);
+    setDrawerOpen(false);
     if (onDrawerClose) {
       onDrawerClose();
     }
@@ -125,12 +132,11 @@ DrawerTemplateHeaderProfile.propTypes = {
 
 const styles = () => ({
   drawer: {
-    marginTop: cordovaDrawerTopMargin(),
+    marginTop: `${heightOfCordovaSpacer(true)} !important`,
     width: '80%',
   },
   dialogPaper: {
     display: 'block',
-    marginTop: hasIPhoneNotch() ? 68 : 48,
     minWidth: '100%',
     maxWidth: '100%',
     width: '100%',
@@ -138,6 +144,7 @@ const styles = () => ({
     maxHeight: '100%',
     height: '100%',
     margin: '0 auto',
+    marginTop: hasCordovaNotch() ? 68 : 48,
     '@media (min-width: 577px)': {
       maxWidth: '550px',
       width: '90%',
@@ -216,11 +223,6 @@ const styles = () => ({
 const DrawerTemplateHeaderProfileWrapper = styled('div')`
   margin: 0 15px;
   min-width: 300px;
-`;
-
-const CloseDrawerIconWrapper = styled('div')`
-  display: flex;
-  justify-content: flex-end;
 `;
 
 export default withStyles(styles)(DrawerTemplateHeaderProfile);

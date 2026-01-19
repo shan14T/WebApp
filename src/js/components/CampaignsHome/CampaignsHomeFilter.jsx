@@ -42,10 +42,10 @@ function CampaignsHomeFilter (props) {
         <SearchBar2024
           clearButton
           searchButton
-          placeholder="Search by name or office"
+          placeholder="Search by name, office or party"
           searchFunction={props.searchFunction}
           clearFunction={props.clearSearchFunction}
-          searchUpdateDelayTime={500}
+          searchUpdateDelayTime={1500}
         />
       </SearchBarWrapper>
     </CampaignsHomeFilterWrapper>

@@ -18,7 +18,6 @@ import { openSnackbar } from '../../../common/components/Widgets/SnackNotifier';
 import AppObservableStore from '../../../common/stores/AppObservableStore';
 import PoliticianStore from '../../../common/stores/PoliticianStore';
 import convertToInteger from '../../../common/utils/convertToInteger';
-import { isWebApp } from '../../../common/utils/isCordovaOrWebApp';
 import isMobileScreenSize from '../../../common/utils/isMobileScreenSize';
 import Cookies from '../../../common/utils/js-cookie/Cookies';
 import { renderLog } from '../../../common/utils/logging';
@@ -325,55 +324,47 @@ class ItemActionBar extends PureComponent {
     const { classes, externalUniqueId } = this.props;
     // const buttonRootClass = inCard ? classes.buttonRootForCard : classes.buttonRoot;
     const buttonRootClass = classes.buttonHelpRoot;
-    if (isWebApp()) {
-      return (
-        <Button
-          classes={{
-            root: buttonRootClass,
-            outlinedPrimary: classes.buttonOutlinedPrimary,
-          }}
-          color="primary"
-          id={`itemActionBarHelpThemWinButton-${externalUniqueId}-${localUniqueId}`}
-          onClick={() => this.openHelpWinOrDefeatModal('helpWinModal', `itemActionBarHelpThemWinButton-${externalUniqueId}-${localUniqueId}`)}
-          variant="contained"
-        >
-          <HelpButtonLabel>
-            &nbsp;Help Win&nbsp;
-          </HelpButtonLabel>
-        </Button>
-      );
-      // Formerly "Help Win with $1"
-    } else {
-      return null;
-    }
+    return (
+      <Button
+        classes={{
+          root: buttonRootClass,
+          outlinedPrimary: classes.buttonOutlinedPrimary,
+        }}
+        color="primary"
+        id={`itemActionBarHelpThemWinButton-${externalUniqueId}-${localUniqueId}`}
+        onClick={() => this.openHelpWinOrDefeatModal('helpWinModal', `itemActionBarHelpThemWinButton-${externalUniqueId}-${localUniqueId}`)}
+        variant="contained"
+      >
+        <HelpButtonLabel>
+          &nbsp;Help Win&nbsp;
+        </HelpButtonLabel>
+      </Button>
+    );
+    // Formerly "Help Win with $1"
   };
 
   helpDefeatThemButton = (localUniqueId) => {
     const { classes, externalUniqueId, opposeHideInMobile } = this.props;
     // const buttonRootClass = inCard ? classes.buttonRootForCard : classes.buttonRoot;
     const buttonRootClass = classes.buttonHelpRoot;
-    if (isWebApp()) {
-      return (
-        <Button
-          classes={{
-            root: buttonRootClass,
-            outlinedPrimary: classes.buttonOutlinedPrimary,
-          }}
-          className={`${opposeHideInMobile ? 'd-none d-sm-block ' : ''}`}
-          color="primary"
-          id={`itemActionBarHelpDefeatButton-${externalUniqueId}-${localUniqueId}`}
-          onClick={() => this.openHelpWinOrDefeatModal('helpDefeatModal', `itemActionBarHelpDefeatButton-${externalUniqueId}-${localUniqueId}`)}
-          variant="contained"
-        >
-          <HelpButtonLabel>
-            Help Defeat
-          </HelpButtonLabel>
-        </Button>
-      );
-      // Formerly "$1 to Help Defeat"
-    } else {
-      return null;
-    }
+    return (
+      <Button
+        classes={{
+          root: buttonRootClass,
+          outlinedPrimary: classes.buttonOutlinedPrimary,
+        }}
+        className={`${opposeHideInMobile ? 'd-none d-sm-block ' : ''}`}
+        color="primary"
+        id={`itemActionBarHelpDefeatButton-${externalUniqueId}-${localUniqueId}`}
+        onClick={() => this.openHelpWinOrDefeatModal('helpDefeatModal', `itemActionBarHelpDefeatButton-${externalUniqueId}-${localUniqueId}`)}
+        variant="contained"
+      >
+        <HelpButtonLabel>
+          Help Defeat
+        </HelpButtonLabel>
+      </Button>
+    );
+    // Formerly "$1 to Help Defeat"
   };
 
   opposeButton = (localUniqueId) => {
@@ -1160,28 +1151,28 @@ const styles = (theme) => ({
     },
   },
   buttonIconDone: {
-    /* color: `${DesignTokenColors.primary700}`, *//* change to green */
+    color: `${DesignTokenColors.confirmation300}`, /* green color before selection */
     fontSize: 22,
     fontWeight: 'bold',
     marginRight: '.3rem',
     marginTop: '-2px',
   },
   buttonIconDoneSelected: {
-    color: `${DesignTokenColors.confirmation300}`, /* change to green */
+    color: `${DesignTokenColors.confirmation300}`, 
     fontSize: 22,
     fontWeight: 'bold',
     marginRight: '.3rem',
     marginTop: '-2px',
   },
   buttonIconNotInterested: {
-    /* color: `${DesignTokenColors.alert500}`, *//* change to red */
+    color: `${DesignTokenColors.alert500}`, /* red color before selection */
     fontSize: 18,
     fontWeight: 'bold',
     marginRight: '.3rem',
     marginTop: '-2px',
   },
   buttonIconNotInterestedSelected: {
-    color: `${DesignTokenColors.alert500}`, /* change to red */
+    color: `${DesignTokenColors.alert500}`,
     fontSize: 18,
     fontWeight: 'bold',
     marginRight: '.3rem',

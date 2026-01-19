@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import colors from '../../common/components/Style/Colors';
 import DesignTokenColors from '../../common/components/Style/DesignTokenColors';
-import { isIOSAppOnMac, isIPadGiantSize } from '../../common/utils/cordovaUtils';
+import { isIOs6p1OrSmaller, isIOSAppOnMac, isIPad, isIPadGiantSize, isIPhoneSmall } from '../../common/utils/cordovaUtils';
 import { isCordova, isWebApp } from '../../common/utils/isCordovaOrWebApp';
 import isMobileScreenSize from '../../common/utils/isMobileScreenSize';
 import showBallotDecisionsTabs from '../../utilsApi/showBallotDecisionsTabs'; // 2024-04-16 Upgrade to using this
@@ -29,7 +29,7 @@ export const ContentWrapper = styled('div', {
 })(({ spaceBetween }) => (`
   display: flex;
   flex: 1;
-  min-height: 110px;
+  min-height: ${() => (isIPhoneSmall() ? '66px' : '110px')};
   ${spaceBetween ? 'justify-content: space-between;' : 'justify-content: center;'}
 `));
 
@@ -48,17 +48,25 @@ export const ElectionNameBlock = styled('div', {
   ${allowTextWrap ? '' : 'white-space: nowrap;'}
 `));
 
+function electionNameH1Width () {
+  let size = window.screen.width > 576 ? '30px' : '26px';
+  if (isCordova() && isIOs6p1OrSmaller()) {
+    size = '20px';
+  }
+  return size;
+}
+
 export const ElectionNameH1 = styled('h1', {
   shouldForwardProp: (prop) => !['centerText'].includes(prop),
 })(({ centerText, theme }) => (`
-  font-size: 30px;
+  font-size: ${electionNameH1Width()};
   padding-top: 5px;
   padding-bottom: 18px;
   ${theme.breakpoints.down('sm')} {
-    font-size: 26px;
     padding-top: 5px;
     padding-bottom: 12px;
   }
+  ${() => (isIOs6p1OrSmaller() ? 'font-weight: 600;' : '')}
   line-height: 1;
   margin: 0px;
   ${centerText ? 'text-align: center;' : ''}
@@ -144,6 +152,8 @@ export function ballotWrapperBodyStyles () {
 
   if (showBallotDecisionsTabs()) {
     styles.paddingTop = '36px';
+  } else if (isIPad()) {
+    styles.paddingTop = '10px';
   } else if (isWebApp() || twoColumnDisplay) {
     styles.paddingTop = '105px';
   } else {

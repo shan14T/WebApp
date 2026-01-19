@@ -9,12 +9,11 @@ import AppObservableStore, { messageService } from '../../common/stores/AppObser
 import { hasDynamicIsland, isCordovaWide, isIOS } from '../../common/utils/cordovaUtils';
 import historyPush from '../../common/utils/historyPush';
 import { normalizedHref } from '../../common/utils/hrefUtils';
-import { isWebApp } from '../../common/utils/isCordovaOrWebApp';
+import { isCordova, isWebApp } from '../../common/utils/isCordovaOrWebApp';
 import Cookies from '../../common/utils/js-cookie/Cookies';
 import { oAuthLog, renderLog } from '../../common/utils/logging';
 import stringContains from '../../common/utils/stringContains';
-import { PageContentContainer } from '../../components/Style/pageLayoutStyles';
-import IPhoneSpacer from '../../components/Widgets/IPhoneSpacer';
+import { CordovaTopOfScreenSpacer, PageContentContainer } from '../../components/Style/pageLayoutStyles';
 import TwitterStore from '../../stores/TwitterStore';
 import VoterStore from '../../stores/VoterStore';
 
@@ -236,7 +235,7 @@ export default class TwitterSignInProcess extends Component {
     if (window.$ === undefined) {
       return (
         <div className="twitter_sign_in_root">
-          <IPhoneSpacer />
+          {isCordova() ? <CordovaTopOfScreenSpacer /> : ''}
           <PageContentContainer>
             <SnackNotifier />
             <LoadingDiv>
@@ -261,7 +260,7 @@ export default class TwitterSignInProcess extends Component {
       oAuthLog('STOPPED, missing twitter_retrieve_attempted: twitterAuthResponse:', twitterAuthResponse);
       return (
         <div className="twitter_sign_in_root">
-          <IPhoneSpacer />
+          {isCordova() ? <CordovaTopOfScreenSpacer /> : ''}
           <PageContentContainer>
             <SnackNotifier />
             <LoadingDiv>
@@ -290,7 +289,7 @@ export default class TwitterSignInProcess extends Component {
     if (twitterAuthResponse.existing_twitter_account_found) {
       return (
         <div className="twitter_sign_in_root">
-          <IPhoneSpacer />
+          {isCordova() ? <CordovaTopOfScreenSpacer /> : ''}
           <PageContentContainer>
             <SnackNotifier />
             <LoadingDiv>

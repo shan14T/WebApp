@@ -14,7 +14,6 @@ import DonationListForm from '../../common/components/Donation/DonationListForm'
 import DonorboxCordova from '../../common/components/Donation/DonorboxCordova';
 import DesignTokenColors from '../../common/components/Style/DesignTokenColors';
 import standardBoxShadow from '../../common/components/Style/standardBoxShadow';
-import OpenExternalWebSite from '../../common/components/Widgets/OpenExternalWebSite';
 import DonateStore from '../../common/stores/DonateStore';
 import initializejQuery from '../../common/utils/initializejQuery';
 import { isCordova, isWebApp } from '../../common/utils/isCordovaOrWebApp';
@@ -28,6 +27,7 @@ import VoterStore from '../../stores/VoterStore';
 import { getPageDetails } from '../../utils/lookupPageNameAndPageTypeDict';
 
 const DonorboxEmbed = React.lazy(() => import(/* webpackChunkName: 'DonorboxEmbed' */ '../../common/components/Donation/DonorboxEmbed'));
+const OpenExternalWebSite = React.lazy(() => import(/* webpackChunkName: 'OpenExternalWebSite' */ '../../common/components/Widgets/OpenExternalWebSite'));
 
 /* global $ */
 
@@ -222,24 +222,26 @@ class Donate extends Component {
 
   preDonateDescriptionBottom = (isC4Donation) => (
     <span id="second_paragraph">
-      <OpenExternalWebSite
-        linkIdAttribute="annualBudget"
-        url={isC4Donation ? 'https://projects.propublica.org/nonprofits/organizations/811052585' : 'https://projects.propublica.org/nonprofits/organizations/472691544'}
-        target="_blank"
-        body={(
-          <span id="budgets_small">
-            Our budgets are small,
-            <Launch
-              style={{
-                height: 14,
-                marginLeft: 2,
-                marginTop: '-3px',
-                width: 14,
-              }}
-            />
-          </span>
-        )}
-      />
+      <Suspense fallback={<></>}>
+        <OpenExternalWebSite
+          linkIdAttribute="annualBudget"
+          url={isC4Donation ? 'https://projects.propublica.org/nonprofits/organizations/811052585' : 'https://projects.propublica.org/nonprofits/organizations/472691544'}
+          target="_blank"
+          body={(
+            <span id="budgets_small">
+              Our budgets are small,
+              <Launch
+                style={{
+                  height: 14,
+                  marginLeft: 2,
+                  marginTop: '-3px',
+                  width: 14,
+                }}
+              />
+            </span>
+          )}
+        />
+      </Suspense>
       so every
       {' '}
       {isC4Donation ? '' : 'tax-deductible '}
@@ -250,12 +252,12 @@ class Donate extends Component {
     </span>
   );
 
+  // eslint-disable-next-line no-unused-vars
   donationDescriptionReadMore = (readMore, isC4Donation) => (
     <DonationDescriptionContainer>
       <DonationDescription id="donation_copy">
-        When people feel prepared to vote, they’re more likely to cast a ballot — especially in local elections, where participation is lowest.
-        {' '}
-        At WeVote, our mission is to close the confidence gap so more voters bring their voices into our democracy.
+        Become a sustainer of WeVote! With 150+ active volunteers and 150,000+ voters, our hard costs are ~$4,000 per month.
+        Your donations go toward servers, data fees, collaboration tools, and other critical paid services we can&apos;t get for free.
       </DonationDescription>
       {readMore && (
         <>
@@ -284,7 +286,7 @@ class Donate extends Component {
         </>
       )}
       <DonationDescription>
-        Give now to help more Americans feel confident and prepared to vote.
+        With your help, we make more Americans feel confident and prepared to vote.
         <br />
         {!readMore && (
           <ReadMoreButton

@@ -319,7 +319,7 @@ class Measure extends Component {
             }}
           >
             {/* The following style adjustment prevents horizontal scrolling from the .card style */}
-            <div className="card" style={{ marginRight: 0, marginLeft: 0 }}>
+            <div id="measureOuter" className="card" style={{ marginRight: 0, marginLeft: 0 }}>
               <TwoColumns>
                 <LeftColumnWrapper>
                   <Suspense fallback={<></>}>
@@ -365,7 +365,7 @@ class Measure extends Component {
             <EndorsementCard
               bsPrefix="u-margin-top--sm u-stack--xs"
               variant="primary"
-              buttonText="Endorsements missing?"
+              buttonText={isMobileScreenSize() ? 'Endorsements?' : 'Endorsements missing?'}
               text={`Are there endorsements for ${measureName} that you expected to see?`}
             />
             <br />

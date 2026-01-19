@@ -7,6 +7,7 @@ import { extractNumberOfPositionsFromPositionList } from '../../utils/positionFu
 import OfficeStore from '../../stores/OfficeStore';
 import VoterStore from '../../stores/VoterStore';
 import arrayContains from '../utils/arrayContains';
+// import useVoterCanEditPolitician from '../../hooks/useVoterCanEditPolitician';
 
 class PoliticianStore extends ReduceStore {
   getInitialState () {
@@ -62,11 +63,13 @@ class PoliticianStore extends ReduceStore {
   getAnalyticsPoliticianDetails (politicianWeVoteId) {
     const politician = this.getPoliticianByWeVoteId(politicianWeVoteId);
     return {
+      isClaimedProfile: politician ? politician.is_claimed_profile : false,
       image: politician ? politician.we_vote_hosted_profile_image_url_medium : '',
       politicalParty: politician ? politician.political_party : '',
       politicianName: politician ? this.getPoliticianName(politicianWeVoteId) : '',
       politicianWeVoteId,
       stateCode: politician ? (politician.state_code || 'na').toUpperCase() : '',
+      // voterCanEdit: useVoterCanEditPolitician(),
     };
   }
 
@@ -92,6 +95,14 @@ class PoliticianStore extends ReduceStore {
         politician.politician_name ||
         politician.display_name ||
         '';
+    }
+    return '';
+  }
+
+  getPoliticalParty (politicianWeVoteId) {
+    const politician = this.getState().allCachedPoliticians[politicianWeVoteId] || {};
+    if (politician) {
+      return politician.political_party || '';
     }
     return '';
   }
@@ -160,6 +171,20 @@ class PoliticianStore extends ReduceStore {
     return this.getState().politicianPhotoTooBig || false;
   }
 
+  getPoliticianListVoterCanEdit () {
+    const politiciansVoterCanEdit = [];
+    const { allCachedPoliticians, voterOwnedPoliticianWeVoteIds } = this.getState();
+
+    if (voterOwnedPoliticianWeVoteIds && voterOwnedPoliticianWeVoteIds.length > 0) {
+      voterOwnedPoliticianWeVoteIds.forEach((politicianWeVoteId) => {
+        if (allCachedPoliticians[politicianWeVoteId]) {
+          politiciansVoterCanEdit.push(allCachedPoliticians[politicianWeVoteId]);
+        }
+      });
+    }
+    return politiciansVoterCanEdit;
+  }
+
   getPoliticianWeVoteIdFromPoliticianSEOFriendlyPath (politicianSEOFriendlyPath) {
     return this.getState().allCachedPoliticianWeVoteIdsBySEOFriendlyPath[politicianSEOFriendlyPath] || '';
   }
@@ -204,8 +229,8 @@ class PoliticianStore extends ReduceStore {
   }
 
   getVoterCanEditThisPolitician (politicianWeVoteId = '') {
-    console.log('getVoterCanEditThisPolitician:', politicianWeVoteId);
-    return false;
+    // console.log('getVoterCanEditThisPolitician:', politicianWeVoteId, ', YES: ', arrayContains(politicianWeVoteId, this.getState().voterOwnedPoliticianWeVoteIds), 'voterOwnedPoliticianWeVoteIds: ', this.getState().voterOwnedPoliticianWeVoteIds);
+    return arrayContains(politicianWeVoteId, this.getState().voterOwnedPoliticianWeVoteIds);
   }
 
   getVoterSupportsThisPolitician (politicianWeVoteId) {
@@ -392,6 +417,7 @@ class PoliticianStore extends ReduceStore {
     let politicianList;
     let politicianNewsItem = {};
     let politicianNewsItemWeVoteIds = [];
+    let politicianManaged = {};
     let revisedState;
     let voterSpecificData;
     switch (action.type) {
@@ -464,7 +490,8 @@ class PoliticianStore extends ReduceStore {
         }
         revisedState = state;
         politician = action.res;
-        opponentCandidateList = action.res.opponent_candidate_list;
+        // console.log('PoliticianStore ', action.type, ', politician:', politician);
+        opponentCandidateList = action.res.opponent_candidate_list || [];
         // console.log('PoliticianStore politicianRetrieve, politician:', politician);
         if (allCachedPoliticians === undefined) {
           allCachedPoliticians = {};
@@ -564,6 +591,27 @@ class PoliticianStore extends ReduceStore {
         revisedState = { ...revisedState, voterOwnedPoliticianWeVoteIds };
         return revisedState;
 
+      case 'politiciansManagedRetrieve':
+        if (!action.res || !action.res.success) return state;
+        revisedState = state;
+        if (action.res.politicians_managed_list) {
+          voterOwnedPoliticianWeVoteIds = []; // Reset the whole list
+          for (let i = 0; i < action.res.politicians_managed_list.length; ++i) {
+            politicianManaged = action.res.politicians_managed_list[i];
+            if (!(politicianManaged.politician_we_vote_id in voterOwnedPoliticianWeVoteIds)) {
+              voterOwnedPoliticianWeVoteIds.push(politicianManaged.politician_we_vote_id);
+            }
+            if (!(politicianManaged.politician_we_vote_id in allCachedPoliticians)) {
+              // Temporarily store a stub of politician data so we can access politician name
+              allCachedPoliticians[politicianManaged.politician_we_vote_id] = politicianManaged;
+            }
+          }
+        } else {
+          voterOwnedPoliticianWeVoteIds = [];
+        }
+        revisedState = { ...revisedState, voterOwnedPoliticianWeVoteIds };
+        return revisedState;
+
       case 'politiciansQuery':
       case 'politiciansRetrieve':
         if (!action.res || !action.res.success) return state;
@@ -576,9 +624,9 @@ class PoliticianStore extends ReduceStore {
         }
 
         if (action.type === 'politiciansQuery') {
-          politicianList = action.res.politicians;
+          politicianList = action.res.politicians || [];
         } else {
-          politicianList = action.res.politician_list;
+          politicianList = action.res.politician_list || [];
         }
         // console.log('PoliticianStore politiciansRetrieve politicianList:', politicianList);
         if (!politicianListsByOfficeWeVoteId) {
@@ -586,7 +634,16 @@ class PoliticianStore extends ReduceStore {
         }
         localPoliticianList = [];
         politicianList.forEach((one) => {
-          allCachedPoliticians[one.we_vote_id] = one;
+          if (action.type === 'politiciansQuery') {
+            // Since the politiciansQuery doesn't return all of the
+            // attached lists that we get from politicianRetrieve,
+            // don't replace a politician if it has already been retrieved
+            if (!(one.politician_we_vote_id in allCachedPoliticians)) {
+              allCachedPoliticians[one.politician_we_vote_id] = one;
+            }
+          } else {
+            allCachedPoliticians[one.we_vote_id] = one;
+          }
           localPoliticianList.push(one);
         });
 
@@ -595,6 +652,20 @@ class PoliticianStore extends ReduceStore {
           allCachedPoliticians,
           politicianListsByOfficeWeVoteId,
         };
+
+      case 'voterCanEditPolitician':
+        // console.log('PoliticianStore voterCanEditPolitician: ', action.payload);
+        if (action.payload === undefined) {
+          return state;
+        } else {
+          revisedState = state;
+          const politicianWeVoteId = action.payload;
+          if (!arrayContains(politicianWeVoteId, voterOwnedPoliticianWeVoteIds)) {
+            voterOwnedPoliticianWeVoteIds.push(politicianWeVoteId);
+            revisedState = { ...revisedState, voterOwnedPoliticianWeVoteIds };
+          }
+          return revisedState;
+        }
 
       case 'voterSignOut':
         // console.log('PoliticianStore voterSignOut, state:', state);

@@ -2,44 +2,26 @@ import { AppBar } from '@mui/material';
 import styled from 'styled-components';
 import standardBoxShadow from '../../common/components/Style/standardBoxShadow';
 import AppObservableStore from '../../common/stores/AppObservableStore';
-import { hasDynamicIsland, hasIPhoneNotch, isAndroidSizeMD, isAndroidSizeWide, isAndroidSizeXL, isIOS, isIOSAppOnMac, isIPad, isIPad11in, isIPadMini, isIPhone14Pro, isIPhone4p7in, isIPhone5p5inEarly, isIPhone5p5inMini, isIPhone6p1in, isIPhone6p5in } from '../../common/utils/cordovaUtils';
+import { heightOfCordovaSpacer, isAndroidSizeMD, isAndroidSizeWide, isAndroidSizeXL, isIOS, isIOSAppOnMac, isIPad } from '../../common/utils/cordovaUtils';
 import { normalizedHrefPage } from '../../common/utils/hrefUtils';
 import { isAndroid, isCordova, isWebApp } from '../../common/utils/isCordovaOrWebApp';
 import isMobileScreenSize, { isTablet } from '../../common/utils/isMobileScreenSize';
 import { cordovaOffsetLog } from '../../common/utils/logging';
 import CordovaPageConstants from '../../constants/CordovaPageConstants';
-import VoterStore from '../../stores/VoterStore';
-import { cordovaComplexHeaderPageContainerTopOffset, cordovaSimplePageContainerTopOffset } from '../../utils/cordovaCalculatedOffsets';
+import { cordovaFullyCalculatedHeaderContainerTopOffset, offsetToBottomOfHeadroomWrapper } from '../../utils/cordovaCalculatedOffsets';
 import { cordovaBallotFilterTopMargin } from '../../utils/cordovaOffsets';
-import cordovaScrollablePaneTopPadding from '../../utils/cordovaScrollablePaneTopPadding';
 import { pageEnumeration } from '../../utils/cordovaUtilsPageEnumeration';
+import scrollablePaneTopPaddingWebApp from '../../utils/scrollablePaneTopPaddingWebApp';
 
+/* global $ */
 
-export const IOSNotchedSpacer = styled('div')`
-  height: ${() => {
-    if (isIPhone5p5inMini())      return '40px';
-    if (hasDynamicIsland())       return '52px';
-    return                        '36px';
-  }};
+export const CordovaTopOfScreenSpacer = styled('div')`
+  height: ${() => heightOfCordovaSpacer(true)};
   top: 0;
   position: fixed;
   background: white;
   width: 100%;
   opacity: 1;
-  z-index: 1300;
-`;
-
-export const IOSNoNotchSpacer = styled('div')`
-  height: ${() => {
-    if (isIPad())                                   return '26px';
-    if (isIPhone4p7in() || isIPhone5p5inEarly())    return '22px';
-    return                                                 '36px';
-  }};
-  top: ${() => ((isIPhone4p7in() ? '-1px' : '0px'))};
-  position: fixed;
-  //background: white;
-  width: 100%;
-  opacity: 0;
   z-index: 3;
 `;
 
@@ -50,17 +32,17 @@ function getPaddingTop () {
     // Example page: http://localhost:3000/ted-lieu-politician-from-california/-/?show_edit_politician_notice=1
     return '102px !important';
   }
+  const normalizedHref = normalizedHrefPage();
   if (isCordova()) {
-    if ((normalizedHrefPage() === 'ballot') ||
-        (normalizedHrefPage() === 'friends' && VoterStore.getVoterIsSignedIn())) {
-      return `${cordovaComplexHeaderPageContainerTopOffset()} !important`;
-    } else {
-      // The following line sets the value directly (non-ideal)
-      cordovaSimplePageContainerTopOffset();
+    if (normalizedHref === 'ballot' && isIOS()) {
       return '';
+    } else {
+      const offs = offsetToBottomOfHeadroomWrapper('getPaddingTop', 'HeadroomWrapper');
+      cordovaOffsetLog(`PageContentContainer paddingTop Cordova: '${offs}px !important' for page: ${normalizedHref}`);
+      return `${offs}px !important`;
     }
   }
-  return cordovaScrollablePaneTopPadding();  // 7/19/25 This is called elsewhere for cordova.  5/14/22 TODO: Refactor this...  Funny that this is no longer used for Cordova, only for the WebApp
+  return scrollablePaneTopPaddingWebApp();  // 7/19/25 This is called elsewhere for cordova.  5/14/22 TODO: Refactor this...  Funny that this is no longer used for Cordova, only for the WebApp
 }
 
 function getPaddingBottom () {
@@ -74,6 +56,31 @@ function getPaddingBottom () {
   return '';
 }
 
+// this is for DualHeaderContainer or PageContentContainer
+function getOuterContainerMargins () {
+  if (isWebApp()) return '0 !important';
+  const page = normalizedHrefPage();
+  let outerContainerHeight = 0;
+  let marginBottom = 35;
+  if (page === 'ballot') {
+    // Ballot is an unusual page, where part of the header is defined within the ballot_root, not the Headroom wrapper
+    // this requires unusual processing.
+    const dualHeaderContainer = $('div[class*=\'DualHeaderContainer\']');
+    if (dualHeaderContainer.length > 0) {        // If it has rendered yet for the ballot page
+      outerContainerHeight = dualHeaderContainer.outerHeight() + dualHeaderContainer.position().top;
+    }
+  } else if (isAndroid() && window.androidNotchCutout) {
+    outerContainerHeight = window.androidNotchInset;
+  }
+
+  if (page === 'challenges') {
+    marginBottom = 60;
+  }
+  const marginStr = `${outerContainerHeight}px 10px ${marginBottom}px 10px`;
+  cordovaOffsetLog(`PageContentContainer ${page} page offset for DualHeaderContainer : ${marginStr}`);
+  return marginStr;    // all other Cordova pages
+}
+
 export const PageContentContainer = styled('div')(({ theme }) => (`
   margin: 0 auto;
   max-width: 960px;
@@ -84,15 +91,9 @@ export const PageContentContainer = styled('div')(({ theme }) => (`
   z-index: 0;
   ${theme.breakpoints.down('sm')} {
     min-height: ${isWebApp() ? '10px' : `${window.innerHeight}px`};
-    margin: ${isWebApp() ? '0 !important' : '35px 10px'};  // Note from 2023: From Dale: Let's discuss this
+    margin: ${getOuterContainerMargins()};
   }
 `));
-
-export const PageContentContainerGetStarted = styled('div')`
-  background-color: white;
-  display: flex;
-  justify-content: center;
-`;
 
 export const HeaderContentContainer = styled('div')(({ theme }) => (`
   margin: ${() => cordovaBallotFilterTopMargin()} auto 0 auto;
@@ -114,24 +115,35 @@ export const HeaderContentOuterContainer = styled('div')`
   padding-left: calc(-100% + 100vw);
 `;
 
+export function getTopOffsetDueToHeadroomWrapper () {
+  const offs = cordovaFullyCalculatedHeaderContainerTopOffset('DualHeaderContainer-top');
+  const offsAdjusted = offs - 65;   // Oct 2025, Yuck, remove some decorative spacing
+  // console.log('DualHeaderContainer styled div topOffset: ', offs);
+  return offs > 0 ? `top: ${offsAdjusted}px` : '';
+}
+
+
 export const DualHeaderContainer = styled('div', {
-  shouldForwardProp: (prop) => !['scrolledDown'].includes(prop),
-})(({ scrolledDown }) => (`
-  // padding-top: cordovaDualHeaderContainerPadding()
+  shouldForwardProp: (prop) => !['scrolledDown', 'topOffset'].includes(prop),
+})(({ scrolledDown, topOffset }) => (`
+  position: fixed;
+  ${topOffset};
   width: 100%;
   background-color: #fff;
   ${scrolledDown ? 'border-bottom: 1px solid #aaa' : ''};
   ${scrolledDown ? `box_shadow: ${standardBoxShadow('wide')}` : ''};
   overflow: hidden;
-  position: fixed;
   z-index: 1;
   left: 0;
 `));
 
-/* eslint-disable no-nested-ternary */
+/* eslint-disable arrow-body-style */
+// Sits on top of the iOS screen, below the IOSSpacer -- contains the header
 export const HeadroomWrapper = styled('div')`
   position: fixed;
-  top: ${() => (hasDynamicIsland() ? (isIPhone14Pro() ? '22px' : '12px') : '0px')};
+  top: ${() => {
+    return heightOfCordovaSpacer(true);
+  }};
   left: 0;
   width: 100%;
   background: white;
@@ -150,19 +162,13 @@ export const TopOfPageHeader = styled('div')(({ theme }) => (`
     padding-left: 15px;
     padding-right: 15px;
   }
-  ${() => ((isIPad11in() || isIPadMini()) ? {
-    paddingLeft: '15px',
-    paddingRight: '15px',
-  } : {})
-  }
+  paddingTop: ${heightOfCordovaSpacer(true)};
 `));
 
 export const TopRowOneLeftContainer = styled('div')`
    grid-row-start: 1;
    grid-row-end: 1;
    grid-column: 1 / 2;
-  //display: flex;
-  //justify-content: flex-start;
 `;
 
 export const TopRowOneMiddleContainer = styled('div')`
@@ -172,21 +178,13 @@ export const TopRowOneMiddleContainer = styled('div')`
 `;
 
 export const TopRowOneRightContainer = styled('div')`
-  // padding-right: 0px;
-  // {() => (((isMobileScreenSize() && !isIPhone5p5inMini()) || isIPadGiantSize()) ? '15px' : '0px')}; // Can this always be 0px?
   padding-right: ${() => {
-    // if (isAndroidSizeWide()) return '55px';
     if (isAndroidSizeMD() || isAndroidSizeXL() || isAndroidSizeWide() || isTablet()) return '15px';
     return '0px';
   }};
   display: flex;
   justify-content: flex-end;
   cursor: pointer;
-
-  // z-index: 3; //to float above the account/ProfilePopUp menu option grey div
-  // {theme.breakpoints.down('sm')} {
-  //   padding-left: {(props) => (props.cordova ? '0 !important' : 'calc(100% - 147px)')};
-  // }
 `;
 
 export const TopRowTwoLeftContainer = styled('div')`
@@ -226,42 +224,23 @@ export const TopRowTwoRightContainer = styled('div')`
 `;
 
 function getBackToPaddingTop () {
-  // Calculated approach Nov 2022
+  // Calculated approach
+  // Try as I might, I could not remove the css 'top' attribute from MUI AppBar, so ...
   const { $ } = window;
   if (!$) {
-    // To trap "$ is not a function" crash
+    // To trap "$ is not a function" crash from before jQuery loads
     return '0px';
   }
   const headerBack = $('#headerBackToBallotAppBar');
   if (isIOS() && headerBack.length) {
-    const iOSNotchedSpacer = $('div[class*=\'IOSNotchedSpacer\']');
-    const iOSNoNotchSpacer = $('div[class*=\'IOSNoNotchSpacer\']');
-    const height = iOSNotchedSpacer.length ? iOSNotchedSpacer.outerHeight() : iOSNoNotchSpacer.outerHeight();
-    cordovaOffsetLog(`getBackToPaddingTop #headerBackToBallotAppBar iOS[No]NotchedSpacer.outerHeight(): ${height}, page: ${pageEnumeration()}`);
-    return `${height}px`;
+    const height = heightOfCordovaSpacer();
+    const heightAppBar = headerBack.outerHeight();
+    const total = height + heightAppBar;
+    const ret = total > 0 ? `${total}px` : '';
+    cordovaOffsetLog(`getBackToPaddingTop #headerBackToBallotAppBar iOSSpacer.outerHeight(): ${height}, ret: '${ret}', page: ${pageEnumeration()}`);
+    return height > 0 ? `${height}px` : '';
   }
-  // end calculated approach
-
-  // IMPORTANT: This is a last chance way to adjust the height, to be used only if cordovaScrollablePaneTopPadding can't do it!
-  if ([CordovaPageConstants.candidateWild,
-    CordovaPageConstants.officeWild,
-    CordovaPageConstants.settingsProfile,
-    CordovaPageConstants.settingsAccount,
-    CordovaPageConstants.settingsNotifications,
-    CordovaPageConstants.settingsSubscription,
-    CordovaPageConstants.settingsWild,
-    CordovaPageConstants.measureWild,
-    CordovaPageConstants.valuesList,
-    CordovaPageConstants.valuesWild].includes(pageEnumeration())) {
-    if (isIPhone4p7in())      return '20px';
-    if (isIPhone5p5inEarly()) return '20px';
-    if (isIPhone5p5inMini())  return '39px';
-    if (isIPhone6p1in())      return '34px';
-    if (isIPhone6p5in())      return '34px';
-    if (hasIPhoneNotch())     return '34px';
-    if (isIPad())             return '24px';
-  }
-  return '0px';
+  return '';
 }
 
 export const AppBarForBackTo = styled(AppBar)(({ theme }) => (`
@@ -271,7 +250,6 @@ export const AppBarForBackTo = styled(AppBar)(({ theme }) => (`
   border-image: initial;
   display: flex;
   justify-content: center;
-  padding-top: ${getBackToPaddingTop()};
   ${() => {
     if (AppObservableStore.getScrolledDown() && ![
       CordovaPageConstants.officeWild,
@@ -289,6 +267,7 @@ export const AppBarForBackTo = styled(AppBar)(({ theme }) => (`
   ${theme.breakpoints.down('sm')} {
     display: inherit;
   };
+  padding-top: ${getBackToPaddingTop()}
 `));
 
 export const OfficeShareWrapper = styled('div')`
@@ -297,7 +276,7 @@ export const OfficeShareWrapper = styled('div')`
 `;
 
 export const FirstRowPhoneOrEmail = styled('div')`
-  margin: 5px 0px 2px 0px;
+  margin: 5px 0 2px 0;
   text-align: center;
 `;
 
@@ -337,6 +316,6 @@ export const TermsAndPrivacyText = styled('span')`
 
 export const DeviceInformationSpan = styled('span')`
   color: #007bff;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
 `;

@@ -8,6 +8,7 @@ import SupportStore from '../../stores/SupportStore';
 import VoterStore from '../../stores/VoterStore';
 import CompleteYourProfileWizard from './CompleteYourProfileWizard';
 import lookupPageNameAndPageTypeDict, { getPageDetails } from '../../utils/lookupPageNameAndPageTypeDict';
+import Cookies from '../../common/utils/js-cookie/Cookies';
 
 const SignInModal = React.lazy(() => import(/* webpackChunkName: 'SignInModal' */ '../../common/components/SignIn/SignInModal'));
 
@@ -107,6 +108,10 @@ class CompleteYourProfileOnBallot extends Component {
     } else {
       this.setItemNotComplete(stepIdSignInToSave);
     }
+    if (howItWorksWatched && personalizedScoreIntroCompleted && voterIsSignedIn) {
+      const expirationDate = new Date(new Date().getTime() + 18 * 60 * 60 * 1000);
+      Cookies.set('complete_your_profile_closed', '1', { expires: expirationDate, path: '/' });
+    }
   }
 
   setItemComplete (stepItemIdToMarkComplete) {
@@ -176,7 +181,7 @@ class CompleteYourProfileOnBallot extends Component {
           buttonText: voterIsSignedIn ? '' : 'Sign up to save choices',
           completed: false,
           description: '',
-          onClick: this.toggleShowSignInModal,
+          onClick: voterIsSignedIn ? this.openBallotChoicesAndSettingsModal : this.toggleShowSignInModal,
           titleCanBeClicked: !voterIsSignedIn,
           width: '33.33%',
         },
@@ -237,6 +242,31 @@ class CompleteYourProfileOnBallot extends Component {
     // console.log('openPersonalizedScoreIntroModal dataLayer:', dataLayerObject);
     TagManager.dataLayer({ dataLayer: dataLayerObject });
   }
+
+      openBallotChoicesAndSettingsModal = () => {
+        // console.log('BallotChoicesAndSettingsModal called');
+        AppObservableStore.setShowBallotChoicesAndSettingsModal(true);
+        // Add dataLayer tracking
+        const { location: { pathname: currentPathname } } = window;
+        const currentPage = lookupPageNameAndPageTypeDict(currentPathname);
+
+        const dataLayerObject = {
+          actionDetails: {
+            actionType: 'openModal',
+            buttonId: 'yourBallotChoicesAndSettingsStep',
+          },
+          event: 'action',
+          destinationDetails: {
+            destinationPageName: 'BallotChoicesAndSettingsModal',
+            destinationPageType: currentPage.pageType,
+            destinationPathname: currentPathname,
+          },
+          pageDetails: getPageDetails(),
+          userDetails: VoterStore.getAnalyticsUserDetails(),
+        };
+        // console.log('BallotChoicesAndSettingsModal dataLayer:', dataLayerObject);
+        TagManager.dataLayer({ dataLayer: dataLayerObject });
+      }
 
   goToNextIncompleteStep = () => {
     const { steps } = this.state;

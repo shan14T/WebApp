@@ -3,7 +3,10 @@ import webAppConfig from '../../config';
 import { isAndroid, isAndroidTablet, isCordova, isWebApp } from './isCordovaOrWebApp';
 import { cordovaKeyboardHidingLog, cordovaOffsetLog, oAuthLog } from './logging';
 
+const jsonModelsData = require('./iPhoneModels.json');
+
 /* global $  */
+/* eslint-disable no-unused-vars */
 
 let androidPixels = 0;
 let androidSizeString;
@@ -42,19 +45,6 @@ export function isIOSAppOnMac () {
   }
   return false;
 }
-
-// export function getProcessorArchitecture () {
-//   console.log('STEVE       window.cordova.plugins: ', window.cordova.plugins);
-//   const { diagnostic: { getArchitecture } } = window.cordova.plugins;
-//
-//   getArchitecture((arch) => {
-//     console.log(`Cordova:   Processor Architecture: ${arch}`);
-//     return arch;
-//   }, (error) => {
-//     console.error('cordova.plugins.diagnostic.getArchitecture threw: ', error);
-//     return 'error';
-//   });
-// }
 
 export function dumpScreenAndDeviceFields () {
   dumpObjProps('window.screen', window.screen);
@@ -140,69 +130,55 @@ export function logMatch (device, byModel) {
   }
 }
 
-// https://theapplewiki.com/wiki/Models
-// https://gist.github.com/adamawolf/3048717
-// http://socialcompare.com/en/comparison/apple-iphone-product-line-comparison
-// https://www.ios-resolution.com/
+// https://theapplewiki.com/wiki/List_of_iPhones
+// https://theapplewiki.com/wiki/List_of_iPads
+// https://theapplewiki.com/wiki/List_of_iPad_minis
+// https://theapplewiki.com/wiki/List_of_iPad_Airs
+// https://theapplewiki.com/wiki/List_of_iPad_Pros
+// alternate source: https://deviceatlas.com/resources/clientside/ios-hardware-identification
+// https://www.convertcsv.com/csv-to-json.htm
+// NOTE: use convertcsv.com to convert iPhoneModels.txt to iPhoneModels.json
+let thisAppleDeviceParameters;
+export function getThisAppleDeviceParameters () {
+  if (thisAppleDeviceParameters) {
+    return thisAppleDeviceParameters;
+  }
+  // console.log('at thisAppleDeviceParameters window.device: ', JSON.stringify(window.device));
+  // console.log('at thisAppleDeviceParameters window.device?.model: ', window.device?.model);
+  if (window.device?.model) {
+    thisAppleDeviceParameters = jsonModelsData.find((leaf) => leaf.modelId === window.device.model);
+    if (thisAppleDeviceParameters) {
+      logMatch('Cordova:   getThisAppleDeviceParameters: ', JSON.stringify(thisAppleDeviceParameters));
+      console.log(`Cordova:   getThisAppleDeviceParameters (%c${thisAppleDeviceParameters.name}%c): ${JSON.stringify(thisAppleDeviceParameters)}`, 'font-weight: bold;', 'font-weight: 400;');
+      return thisAppleDeviceParameters;
+    }
+  }
+  console.error('Cordova:  Possible first-day device model -- Default (and wrong) values used.');
+  // Default, usually wrong data, to avoid crash before device ready in Cordova, or to handle unknown new device
+  if (window.device?.model && window.device.model.startsWith('iPad')) {
+    thisAppleDeviceParameters = jsonModelsData.find((leaf) => leaf.modelId === 'iPad16,4');
+  } else {
+    thisAppleDeviceParameters = jsonModelsData.find((leaf) => leaf.modelId === 'iPhone18,4');
+  }
+  return thisAppleDeviceParameters;
+}
 
 export function getIOSSizeString () {
-  //    iPhone:               iPhone       3G           3GS          4            4            4            4S
-  const iPhone3p5inPhones = ['iPhone1,1', 'iPhone1,2', 'iPhone2,1', 'iPhone3,1', 'iPhone3,2', 'iPhone3,3', 'iPhone4,1'];
-  //    iPhone:             5            5            5C           5C           5S           5S           SE
-  const iPhone4inPhones = ['iPhone5,1', 'iPhone5,2', 'iPhone5,3', 'iPhone5,4', 'iPhone6,1', 'iPhone6,2', 'iPhone8,4'];
-  //    iPhone:               6            6S           7            7            8             8             SE 2nd Gen    SE 3rd Gen
-  const iPhone4p7inPhones = ['iPhone7,2', 'iPhone8,1', 'iPhone9,1', 'iPhone9,3', 'iPhone10,1', 'iPhone10,4', 'iPhone12,8', 'iPhone14,6'];
-  //    iPhone:                     6 Plus       6S Plus      7 Plus       7Plus        8 Plus        8 Plus
-  const isIPhone5p5inEarlyPhones = ['iPhone7,1', 'iPhone8,2', 'iPhone9,2', 'iPhone9,4', 'iPhone10,2', 'iPhone10,5'];
-  //    iPhone:                      12 Mini       13 mini
-  const isIPhone5p5inMiniPhones = ['iPhone13,1', 'iPhone14,4'];
-  //    iPhone:               X             X             XS            11 Pro
-  const iPhone5p8inPhones = ['iPhone10,3', 'iPhone10,6', 'iPhone11,2', 'iPhone12,3'];
-  //    iPhone:               XR            11            12 Pro         12             13 Pro           13           14       15 Pro        15             16 (6.1)     16 Pro (6.3)
-  const iPhone6p1inPhones = ['iPhone11,8', 'iPhone12,1', 'iPhone13,3', 'iPhone13,2', 'iPhone14,2', 'iPhone14,5', 'iPhone14,7', 'iPhone16,1', 'iPhone15,4', 'iPhone17,3', 'iPhone17,1'];
-  //    iPhone:               XS Max        XS Max        11 Pro Max   12ProMax(6.7) 13ProMax(6.7)   14 Plus         14 Pro     14 Pro Max   15ProMax(6.7) 15 Plus(6.7)  16 Plus(6.7)  16 Pro Max (6.9)
-  const iPhone6p5inPhones = ['iPhone11,4', 'iPhone11,6', 'iPhone12,5', 'iPhone13,4', 'iPhone14,3', 'iPhone14,8', 'iPhone15,2', 'iPhone15,3', 'iPhone16,2', 'iPhone15,5', 'iPhone17,4', 'iPhone17,2'];
-  if (iPhone3p5inPhones.includes(window.device.model)) {
-    return 'isIPhone3p5in';
-  } else if (iPhone4inPhones.includes(window.device.model)) {
-    return 'isIPhone4in';
-  } else if (iPhone4p7inPhones.includes(window.device.model)) {
-    return 'isIPhone4p7in';
-  } else if (isIPhone5p5inEarlyPhones.includes(window.device.model)) {
-    return 'isIPhone5p5inEarly';
-  } else if (isIPhone5p5inMiniPhones.includes(window.device.model)) {
-    return 'isIPhone5p5inMini';
-  } else if (iPhone5p8inPhones.includes(window.device.model)) {
-    return 'isIPhone5p8in';
-  } else if (iPhone6p1inPhones.includes(window.device.model)) {
-    return 'isIPhone6p1in';
-  } else if (iPhone6p5inPhones.includes(window.device.model)) {
-    return 'isIPhone6p5in';
-  }
-  // If we are here, we know that the window.device.model was not matched to any phones we recognize.
-  // So now we calculate based on screen size
-  // const { pbakondyScreenSize: size } = window;
-  const { visualViewport: { height, width } } = window;
+  const params = getThisAppleDeviceParameters();
+  return params.class;
+}
 
-  if ((height === '480' && width === '320') ||  // iPhone Original, 3, 3GS
-      (height === '960' && width === '640')) {  // iPhone 4, 4S
-    return 'isIPhone3p5in';
-  } else if (height === '1136' && width === '640') {  // iPhone 5, 5c, 5s, SE
-    return 'isIPhone4in';
-  } else if (height === '1334' && width === '750') {  // iPhone 6, 6s, 7, 8, SE (2nd Gen)
-    return 'isIPhone4p7in';
-  } else if ((height === '1920' && width === '1080') ||  // iPhone 6 Plus, 6s Plus, 7 Plus, 8 Plus
-             (height === '2208' && width === '1242')) {   // iPhone 8 Plus in simulator
-    return 'isIPhone5p5inEarly';
-  } else if (height === '2436' && width === '1125') {  // iPhone X, XS, 11 Pro
-    return 'isIPhone5p8in';
-  } else if ((height === '1792' && width === '828') ||  // iPhone XR, 11 (11 as described on apple.com)
-    (height === '1624' && width === '750')) {   // iPhone 11 in Simulator
-    return 'isIPhone6p1in';
-  } else if (height === '2688' && width === '1242') {  // iPhone XS Max, 11/12 Pro Max
-    return 'isIPhone6p5in';
+export function getIOSNameString () {
+  const params = getThisAppleDeviceParameters();
+  return params.name;
+}
+
+export function getIOSDiagonalValue () {
+  if (isIOS()) {
+    const params = getThisAppleDeviceParameters();
+    return params.size;
   }
-  return '';
+  return null;
 }
 
 function detectIsZoomed (properWidth) {
@@ -240,7 +216,7 @@ export function isDeviceZoomed () {
 // 3.5" screen iPhones
 export function isIPhone3p5in () {
   if (isIOS()) {
-    if (getIOSSizeString() === 'isIPhone3p5in') {
+    if (getIOSSizeString() === 'iPhone3p5in') {
       logMatch('isIPhone3p5in: iPhone 5s SE (3.5")', true);
       return true;
     }
@@ -251,7 +227,7 @@ export function isIPhone3p5in () {
 // 4" screen iPhones, 326 ppi pixel density
 export function isIPhone4in () {
   if (isIOS()) {
-    if (getIOSSizeString() === 'isIPhone4in') {
+    if (getIOSSizeString() === 'iPhone4in') {
       logMatch('isIPhone4in: iPhone 5s SE (4")', true);
       return true;
     }
@@ -262,7 +238,7 @@ export function isIPhone4in () {
 // 4.7" screen iPhones, 326 ppi pixel density
 export function isIPhone4p7in () {
   if (isIOS()) {
-    if (getIOSSizeString() === 'isIPhone4p7in') {
+    if (getIOSSizeString() === 'iPhone4p7in') {
       logMatch('isIPhone4p7in: iPhone 678 & SE2 (4.7")', true);
       return true;
     }
@@ -273,7 +249,7 @@ export function isIPhone4p7in () {
 // 5.5" screen iPhones, 401 ppi pixel density
 export function isIPhone5p5inEarly () {
   if (isIOS()) {
-    if (getIOSSizeString() === 'isIPhone5p5inEarly') {
+    if (getIOSSizeString() === 'iPhone5p5inEarly') {
       logMatch('isIPhone5p5inEarly: iPhone 678 Plus (5.5")', true);
       return true;
     }
@@ -284,7 +260,7 @@ export function isIPhone5p5inEarly () {
 // iPhone 12+ Mini 5.5" screen iPhones, 401 ppi pixel density
 export function isIPhone5p5inMini () {
   if (isIOS()) {
-    if (getIOSSizeString() === 'isIPhone5p5inMini') {
+    if (getIOSSizeString() === 'iPhone5p5inMini') {
       logMatch('isIPhone5p5inMini: iPhone 12,13 Mini (5.5")', true);
       return true;
     }
@@ -295,7 +271,7 @@ export function isIPhone5p5inMini () {
 // 5.8" screen iPhones, 458 ppi pixel density
 export function isIPhone5p8in () {
   if (isIOS()) {
-    if (getIOSSizeString() === 'isIPhone5p8in') {
+    if (getIOSSizeString() === 'iPhone5p8in') {
       logMatch('isIPhone5p8in: iPhone X or Xs or 11 Pro (5.8")', true);
       return true;
     }
@@ -306,7 +282,7 @@ export function isIPhone5p8in () {
 // 6.1" screen iPhones, 326 ppi pixel density
 export function isIPhone6p1in () {
   if (isIOS()) {
-    if (getIOSSizeString() === 'isIPhone6p1in') {
+    if (getIOSSizeString() === 'iPhone6p1in') {
       logMatch('isIPhone6p1in: XR, 11, 12 Pro, 12, 13 Pro, or 13 (6.1")', true);
       return true;
     }
@@ -317,7 +293,7 @@ export function isIPhone6p1in () {
 // 6.5" screen iPhones, 458 ppi pixel density
 export function isIPhone6p5in () {
   if (isIOS()) {
-    if (getIOSSizeString() === 'isIPhone6p5in') {
+    if (getIOSSizeString() === 'iPhone6p5in') {
       logMatch('isIPhone6p5in: iPhone XsMax or 11/12/13/14 Pro Max (6.7"),', true);
       return true;
     }
@@ -325,69 +301,81 @@ export function isIPhone6p5in () {
   return false;
 }
 
+// iPhone Air
+export function isIPhoneAir () {
+  if (isIOS()) {
+    if (getIOSNameString() === 'iPhone Air') {
+      logMatch('isIPhoneAir: isIPhoneAir,', true);
+      return true;
+    }
+  }
+  return false;
+}
+
+export function isIPhone17 () {
+  if (isIOS()) {
+    if (getIOSNameString() === 'iPhone 17') {
+      logMatch('isIPhone17: isIPhone17,', true);
+      return true;
+    }
+  }
+  return false;
+}
+
+export function isIPhoneSmall () {
+  return getIOSDiagonalValue() <= 5.8;
+}
+
 export function isIPad () {
   if (isIOS() && !isIOSAppOnMac()) {
     if (window.device.model.substring(0, 4) === 'iPad') {
       logMatch('iPad', true);
       return true;
-    } else {
-      const ratio = window.devicePixelRatio || 1;
-      const screen = {
-        width: window.screen.width * ratio,
-        height: window.screen.height * ratio,
-      };
-      /* eslint-disable no-extra-parens */
-      if ((screen.width === 768 && screen.height === 1024) ||  // iPad, 9.7" 2010 and Gen 2, 2011 and Mini 2012
-          (screen.width === 1536 && screen.height === 2048) || // iPad, 9.7" Gen 3 2012, Gen 4 2013, 2018 iPad, iPad Pro 2016, iPad Air 2013, and Mini Retina 2013
-          (screen.width === 1668 && screen.height === 2224) || // iPad Pro 10.5" Gen 2  2017
-          (screen.width === 1668 && screen.height === 2388) || // iPad Pro 11", iPad Pro 12.9" October 2018
-          (screen.width === 2048 && screen.height === 2732)) { // iPad Pro 12.9" Gen 2, 2018
-        logMatch('iPad', false);
-        return true;
-      }
     }
   }
   return false;
 }
 
 export function isIPad11in () {
-  if (isIOS() && !isIOSAppOnMac() &&
-    ['iPad8,1', 'iPad8,2', 'iPad8,3', 'iPad8,4', 'iPad8,5', 'iPad8,6', 'iPad8,7', 'iPad8,8',   // iPad Pro 11 inch 3rd Gen
-      'iPad8,9', 'iPad8,10',                                       // iPad Pro 11 inch 4th Gen
-      'iPad13,4', 'iPad13,5', 'iPad13,6', 'iPad13,7', 'iPad13,8',  // iPad Pro 11 inch 5th Gen
-      'iPad13,17',                                                 // iPad Air 10.9 inch 5th Gen
-      'iPad13,18',                                                 // iPad     10.2 inch 9th Gen (Maybe too small for this category?)
-      'iPad13,19',                                                 // iPad     10.9 inch 10th Gen
-      'iPad14,3',                                                  // iPad     11 inch 4th Gen
-      'iPad14,4',                                                  // iPad     11 inch 4th Gen
-    ].includes(window.device.model)) {
-    logMatch('iPad11in', true);
-    return true;
+  if (isIOS() && !isIOSAppOnMac()) {
+    const params = getThisAppleDeviceParameters();
+    const match = params.class === 'iPad11in';
+    logMatch('iPad11in', match);
+    return match;
   }
   return false;
 }
 
 export function isIPadMini () {
-  if (isIOS() && !isIOSAppOnMac() &&
-    ['iPad2,5', 'iPad2,6', 'iPad2,7',     // iPad Mini
-      'iPad4,4', 'iPad4,5', 'iPad4,6',    // iPad Mini 2
-      'iPad4,7', 'iPad4,8', 'iPad4,9',    // iPad Mini 3
-      'iPad5,1', 'iPad5,2',               // iPad Mini 4
-      'iPad11,1', 'iPad11,2',             // iPad Mini 5
-      'iPad14,1', 'iPad14,2',             // iPad Mini 6th generation
-    ].includes(window.device.model)) {
-    logMatch('iPadMini', true);
-    return true;
+  if (isIOS() && !isIOSAppOnMac()) {
+    const params = getThisAppleDeviceParameters();
+    const match = params.class === 'iPadMini';
+    logMatch('iPad11in', match);
+    return match;
   }
   return false;
 }
 
-export function hasDynamicIsland () {
-  if (isIOS() && !isIOSAppOnMac() &&
-    // 14 Pro       14 Pro Max    15           15 Plus        15 Pro        15 Pro Max    16 Pro (6.3)  16 Pro Max    16 PM (6.9)   16 Plus(6.7)
-    ['iPhone15,2', 'iPhone15,3', 'iPhone15,4', 'iPhone15,5', 'iPhone16,1', 'iPhone16,2', 'iPhone17,1', 'iPhone17,2', 'iPhone17,3', 'iPhone17,4'].includes(window.device.model)) {
-    logMatch('iPhone 14 Pro or 14 Pro Max or 15*, Dynamic Island Sized Header', true);
-    return true;
+export function heightOfCordovaSpacer (asString = false) {
+  let height = 0;
+  if (isCordova()) {
+    if (isIOS() && !isIOSAppOnMac()) {
+      const { iOSSpacer } = getThisAppleDeviceParameters();
+      height = iOSSpacer;
+    } else if (isAndroid()) {
+      height = window.androidNotchCutout ? window.androidNotchInset : 0;
+    }
+  }
+  // console.log(`heightOfCordovaSpacer '${asString ? `${height}px` : height}'`);
+  return asString ? `${height}px` : height;
+}
+
+export function isCordovaPhone () {
+  if (isIOS() && !isIOSAppOnMac()) {
+    const params = getThisAppleDeviceParameters();
+    return params.class.startsWith('iPhone');
+  } else if (isAndroid()) {
+    return !isAndroidTablet();
   }
   return false;
 }
@@ -402,25 +390,49 @@ export function isIPhone14Pro ()  {
 }
 
 export function isIPadGiantSize () {
-  if (!isIPad()) {
-    return false;
-  }
-  const ratio = window.devicePixelRatio || 1;
-  const screen = {
-    width: window.screen.width * ratio,
-    height: window.screen.height * ratio,
-  };
-  if (['iPad13,8', 'iPad13,9', 'iPad13,10', 'iPad13,11'].includes(window.device.model)) {      // iPad Pro (12.9-inch) (5th generation)
-    logMatch('iPad12.9in', true);
-  } else if (screen.width === 2048 && screen.height === 2732) { // iPad Pro 12.9" Gen 2, 2018 and same sizeiPad7,1 iPad7,2
-    logMatch('iPadGiantSize', true);
-    return true;
+  if (isIOS() && !isIOSAppOnMac()) {
+    const params = getThisAppleDeviceParameters();
+    const match = params.class === 'iPad13in';
+    logMatch('iPad Giant Size', match);
+    return match;
   }
   return false;
 }
 
-export function hasIPhoneNotch () {
-  return isIPhone5p5inMini() || isIPhone5p8in() || isIPhone6p1in() || isIPhone6p5in();
+export function hasAndroidNotch () {
+  return window.androidNotchCutout;
+}
+
+export function hasDynamicIsland () {
+  if (isIOS() && !isIOSAppOnMac()) {
+    const params = getThisAppleDeviceParameters();
+    const marketingInt = parseInt(params.marketingNumber) || 0;
+    const isAir = params.marketingNumber === 'Air';
+    const isPro = params.name.includes('Pro');
+    const hasDynamic = params.type === 'phone' && (isAir || marketingInt > 15 || (marketingInt === 14 && isPro));
+    logMatch('iPhone 14 Pro or 14 Pro Max or 15*, Dynamic Island Sized Header', hasDynamic);
+    return hasDynamic;
+  }
+  return false;
+}
+
+export function hasCordovaNotch () {
+  if (isAndroid()) {
+    return hasAndroidNotch();
+  } else if (isIOS()) {
+    // Notched models === from the iPhone X up to the iPhone 14 and iPhone SE (2022).
+    // Specifically, this includes the iPhone X, XR, XS, 11, 12, 13 series, iPhone 14 and 14 Plus, and the iPhone SE (2022).
+    const params = getThisAppleDeviceParameters();
+    const marketingInt = parseInt(params.marketingNumber) || 0;
+    const isPro = params.name.includes('Pro');
+    const lettered = ['X', 'XR', 'XS', 'SE'];       // Too simple of a test to handle old SE versions, but those are mostly gone
+    return !hasDynamicIsland() && (
+      lettered.includes(params.marketingNumber) ||
+      (marketingInt === 14 && !isPro) ||
+      (marketingInt >= 11 && marketingInt <= 13)
+    );
+  }
+  return false;
 }
 
 export function isIOsSmallerThanPlus () {
@@ -429,6 +441,22 @@ export function isIOsSmallerThanPlus () {
 
 export function isIPhoneMiniOrSmaller () {
   return isIPhone3p5in() || isIPhone4in() || isIPhone4p7in() || isIPhone5p5inMini() || isIPhone5p5inEarly();
+}
+
+export function isIOs6p1OrSmaller () {
+  if (isIOS() && !isIOSAppOnMac()) {
+    const { size } = getThisAppleDeviceParameters();
+    return size <= 6.1;
+  }
+  return false;
+}
+
+export function isIPadSmallerThan13 () {
+  if (isIPad() && !isIOSAppOnMac()) {
+    const { size } = getThisAppleDeviceParameters();
+    return size < 13.0;
+  }
+  return false;
 }
 
 export function getAndroidSize () {
@@ -473,39 +501,6 @@ export function getAndroidSize () {
   console.log(`Cordova:   getAndroidSize(): ${androidSizeString}, calculated diagonal: ${diameter} `);
 
   return androidSizeString;
-}
-
-export function hasAndroidNotch () {
-  // https://deviceatlas.com/blog/list-of-user-agent-strings  (last letter U, like SM-G988U, is a country code ... USA)
-  const ua = navigator.userAgent.toLowerCase();
-  if (ua.includes('SM-S908') ||       // Samsung Galaxy S22 Ultra
-      ua.includes('SM-S906') ||       // Samsung Galaxy S22+
-      ua.includes('SM-S901') ||       // Samsung Galaxy S22
-      ua.includes('SM-G996') ||       // Samsung Galaxy S21
-      ua.includes('SM-G980') ||       // Samsung Galaxy S20
-      ua.includes('SM-G973')) {       // Samsung Galaxy S10
-    return true;
-  }
-
-  // window.device.model: "sdk_gphone64_arm64"
-
-  if (androidPixels === 4446720) {
-    logMatch('Android Samsung Galaxy S22 Ultra (or S22+) detected by pixel size');
-    return true;
-  } else if (androidPixels === 2527200) {
-    logMatch('Android Samsung Galaxy S22 detected by pixel size');  // 1440 x 3040
-    return true;
-  } else if (androidPixels === 2562000) {
-    logMatch('Android Samsung Galaxy S21 detected by pixel size');  // 1080 x 2400
-    return true;
-  } else if (androidPixels === 4608000) {
-    logMatch('Android Samsung Galaxy S20 Ultra detected by pixel size');
-    return true;
-  } else if (androidPixels === 4377600) {
-    logMatch('Android Samsung Galaxy S10 detected by pixel size');  // 1080x2340
-    return true;
-  }
-  return false;
 }
 
 export function isAndroidSizeSM () {
@@ -636,7 +631,7 @@ if (isSimulator()) {
 
 export function getToastClass () {
   let toastClass = '';
-  if (hasIPhoneNotch()) {
+  if (hasCordovaNotch()) {
     toastClass = 'app-toast-cordova__iphone-notch';
   } else if (isIOS()) {
     toastClass = 'app-toast-cordova__iphone';
@@ -697,16 +692,24 @@ export function setGlobalScreenSize (result) {
   window.pbakondyScreenSize = result;
 }
 
+// eslint-disable-next-line no-unused-vars
 export function focusTextFieldAndroid (clue) {
-  if (isAndroid()) {
-    prepareForCordovaKeyboard(clue);
-  }
+  // https://stackoverflow.com/questions/79783205/javascript-webview-on-android-need-to-be-able-to-detect-the-virtual-keyboard-be
+  // Changed android:windowSoftInputMode from adjustResize to adjustPan to allow Android to cover the window with the virtual keyboard
+  // instead of reducing the size of the DOM area when the virtual menu appears and the navigation bar down arrow
+  // (remove virtual keyboard) button is pressed
+
+  // 10/9/25 so this prepareForCordovaKeyboard() is not needed anymore;
+
+  // if (isAndroid()) {
+  //   prepareForCordovaKeyboard(clue);
+  // }
 }
 
 export function blurTextFieldAndroid () {
-  if (isAndroid()) {
-    restoreStylesAfterCordovaKeyboard('AddFriendsByEmail');
-  }
+  // if (isAndroid()) {
+  //   restoreStylesAfterCordovaKeyboard('AddFriendsByEmail');
+  // }
 }
 
 export function chipLabelText (fullLabel) {
@@ -720,7 +723,7 @@ export function chipLabelText (fullLabel) {
     } else if (fullLabel === 'Local') {
       return 'Loc';
     }
-  } else if (window.innerWidth < 400) { // iPhone 6/7/8 in Web Browser AND  iPhone SE/SE2/5 and 12/13 mini in Cordova
+  } else if (window.innerWidth < 400 || getIOSDiagonalValue() <= 6.3) { // iPhone 6/7/8 in Web Browser AND any iPhone smaller than or equal to 6.3" in Cordova
     if (fullLabel === 'Federal') {
       return 'Fed';
     } else if (fullLabel === 'Measure') {
@@ -835,25 +838,6 @@ export function getCordovaBuildVersion () {
   const androidBundleVersion = 'window.androidBundleVersion';
   return `${version} (${isIOS() ? iosBundleVersion : androidBundleVersion})`;
 }
-
-// ////////////////////////
-// this was used in ShareButtonFooter before I started using cordovaLinkToBeSharedFixes above
-// getCurrentFullUrl () {
-//   const { location: { href } } = window;
-//   let currentFullUrl = href || ''; // We intentionally don't use normalizedHref() here
-//   // Handles localhost and Cordova, always builds url to wevote.us
-//   if (currentFullUrl.startsWith('https://localhost')) {
-//     currentFullUrl = currentFullUrl.replace(/https:\/\/localhost.*?\//, 'https://wevote.us/');
-//     // console.log(`currentFullUrl adjusted for localhost: ${currentFullUrl}`);
-//   } else if (currentFullUrl.startsWith('file:///')) {
-//     currentFullUrl = currentFullUrl.replace(/file:.*?android_asset\/www\/index.html#\//, 'https://wevote.us/');
-//     // console.log(`currentFullUrl adjusted for Cordova android: ${currentFullUrl}`);
-//   } else if (currentFullUrl.startsWith('file://')) {
-//     currentFullUrl = currentFullUrl.replace(/file:\/\/.*?Vote.app\/www\/index.html#\//, 'https://wevote.us/');
-//     // console.log(`currentFullUrl adjusted for Cordova ios: ${currentFullUrl}`);
-//   }
-//   return currentFullUrl;
-// }
 
 // In-line
 polyfillFixes('cordovaUtils.js'); // Possibly redundant, but its need was confirmed in the debugger.  This has to run, before any polyfill is needed.

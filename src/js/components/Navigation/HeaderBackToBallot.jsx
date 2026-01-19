@@ -1,23 +1,22 @@
 import { AccountCircle } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
-import styled from 'styled-components';
 import withStyles from '@mui/styles/withStyles';
 import PropTypes from 'prop-types';
 import React, { Component, Suspense } from 'react';
+import styled from 'styled-components';
 import OrganizationActions from '../../actions/OrganizationActions';
 import VoterGuideActions from '../../actions/VoterGuideActions';
 import LazyImage from '../../common/components/LazyImage';
+import AppObservableStore, { messageService } from '../../common/stores/AppObservableStore';
 import apiCalming from '../../common/utils/apiCalming';
-import { isIOSAppOnMac, isIPadGiantSize } from '../../common/utils/cordovaUtils';
+import { isIOSAppOnMac, isIPad, isIPadGiantSize } from '../../common/utils/cordovaUtils';
 import historyPush from '../../common/utils/historyPush';
 import { normalizedHref, normalizedHrefPage } from '../../common/utils/hrefUtils';
 import { isCordova, isWebApp } from '../../common/utils/isCordovaOrWebApp';
-import isMobileScreenSize from '../../common/utils/isMobileScreenSize';
 import { renderLog } from '../../common/utils/logging';
 import stringContains from '../../common/utils/stringContains';
 import voterPhoto from '../../common/utils/voterPhoto';
 import webAppConfig from '../../config';
-import AppObservableStore, { messageService } from '../../common/stores/AppObservableStore';
 import CandidateStore from '../../stores/CandidateStore';
 import MeasureStore from '../../stores/MeasureStore';
 import OfficeStore from '../../stores/OfficeStore';
@@ -588,11 +587,8 @@ class HeaderBackToBallot extends Component {
   }
 
   goToSettings () {
-    if (isMobileScreenSize()) {
-      historyPush('/settings/hamburger');
-    } else {
-      historyPush('/settings/profile');
-    }
+    console.log('goToSettings IN HeaderBackToBallot historyPush');
+    AppObservableStore.setDrawerOpen('headerProfileDrawerOpen', true);
   }
 
   toggleSignInModal () {
@@ -712,7 +708,7 @@ class HeaderBackToBallot extends Component {
     //   if (['candidate', 'office', 'measure'].includes(page)) {
     //     if (isWebApp()) {
     //       cname = `page-header ${!isMobileScreenSize() ? 'page-header__back-to-ballot' : ''}`;
-    //     } else if (hasIPhoneNotch()) {
+    //     } else if (hasCordovaNotch()) {
     //       cname = 'page-header page-header__back-to-ballot-cordova  page-header__cordova-iphonex';
     //     } else {
     //       cname = 'page-header page-header__back-to-ballot-cordova  page-header__cordova';
@@ -733,9 +729,7 @@ class HeaderBackToBallot extends Component {
     return (
       <AppBarForBackTo
         id="headerBackToBallotAppBar"
-        // className={headerClassName}
         color="default"
-        // classes={appBarClasses}
         elevation={0}
       >
         <TopOfPageHeader>
@@ -860,12 +854,17 @@ const styles = (theme) => ({
   },
 });
 
+function officeMeasureMarginLeft () {
+  if (isIPadGiantSize()) return '16px';
+  if (isIPad()) return '26px';
+  return '';
+}
 
 const OfficeOrMeasureTitle = styled('div')`
   font-size: 16px;
   font-weight: 500;
   height: 19px;
-  margin-left: ${() => (isIPadGiantSize() ? '42px' : '')};
+  margin-left: ${() => officeMeasureMarginLeft()};
 `;
 
 export default withStyles(styles)(HeaderBackToBallot);

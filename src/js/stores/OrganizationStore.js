@@ -759,7 +759,7 @@ class OrganizationStore extends ReduceStore {
       case 'organizationsFollowedRetrieve':
         // console.log('OrganizationStore organizationsFollowedRetrieve, action.res: ', action.res);
         if (!action.res.success) {
-          console.log('OrganizationStore ', action.type, ' FAILED action.res:', action.res);
+          // console.log('OrganizationStore ', action.type, ' FAILED action.res:', action.res);
           return state;
         }
         if (action.res.auto_followed_from_twitter_suggestion) {
@@ -1327,6 +1327,13 @@ class OrganizationStore extends ReduceStore {
         }
         OrganizationActions.organizationsFollowedRetrieve();
         return this.resetState();
+
+      case 'voterUpdate':
+        if (action.res && action.res.voter_deleted) {
+          // Same as voterSignOut for this store
+          return this.resetState();
+        }
+        return state;
 
       case 'voterOpposingSave':
       case 'voterPositionCommentSave':

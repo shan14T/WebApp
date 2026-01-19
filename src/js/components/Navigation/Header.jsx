@@ -15,9 +15,7 @@ import stringContains from '../../common/utils/stringContains';
 import VoterStore from '../../stores/VoterStore';
 import { dumpCssFromId } from '../../utils/appleSiliconUtils';
 import { getApplicationViewBooleans, weVoteBrandingOff } from '../../utils/applicationUtils';
-import cordovaTopHeaderTopMargin from '../../utils/cordovaTopHeaderTopMargin';
-import { HeadroomWrapper } from '../Style/pageLayoutStyles';
-import IPhoneSpacer from '../Widgets/IPhoneSpacer';
+import { CordovaTopOfScreenSpacer, HeadroomWrapper } from '../Style/pageLayoutStyles';
 import HeaderBar from './HeaderBar';
 
 
@@ -28,6 +26,7 @@ const HeaderBackToVoterGuides = React.lazy(() => import(/* webpackChunkName: 'He
 const HeaderBarModals = React.lazy(() => import(/* webpackChunkName: 'HeaderBarModals' */ './HeaderBarModals'));
 const HowItWorksModal = React.lazy(() => import(/* webpackChunkName: 'HowItWorksModal' */ '../CompleteYourProfile/HowItWorksModal'));
 const NotificationBannerAboveHeader = React.lazy(() => import(/* webpackChunkName: 'NotificationBannerAboveHeader' */ './NotificationBannerAboveHeader'));
+const OfficeBannerAboveHeader = React.lazy(() => import(/* webpackChunkName: 'OfficeBannerAboveHeader' */ './OfficeBannerAboveHeader'));
 const OrganizationModal = React.lazy(() => import(/* webpackChunkName: 'OrganizationModal' */ '../VoterGuide/OrganizationModal'));
 const PositionDrawer = React.lazy(() => import(/* webpackChunkName: 'PositionDrawer' */ '../Ballot/PositionDrawer'));
 const SharedItemModal = React.lazy(() => import(/* webpackChunkName: 'SharedItemModal' */ '../Share/SharedItemModal'));
@@ -45,6 +44,7 @@ export default class Header extends Component {
       sharedItemCode: '',
       showHowItWorksModal: false,
       showNotificationBannerAboveHeader: AppObservableStore.getShowNotificationBannerAboveHeader(),
+      showOfficeBannerAboveHeader: AppObservableStore.getShowOfficeBannerAboveHeader(),
       showVoterPlanModal: false,
       showOrganizationModal: false,
       showPositionDrawer: false,
@@ -121,6 +121,7 @@ export default class Header extends Component {
       showPositionDrawer: AppObservableStore.showPositionDrawer(),
       showSharedItemModal: AppObservableStore.showSharedItemModal(),
       showNotificationBannerAboveHeader: AppObservableStore.getShowNotificationBannerAboveHeader(),
+      showOfficeBannerAboveHeader: AppObservableStore.getShowOfficeBannerAboveHeader(),
     });
   }
 
@@ -184,6 +185,7 @@ export default class Header extends Component {
   render () {
     renderLog('Header');  // Set LOG_RENDER_EVENTS to log all renders
     const { showNotificationBannerAboveHeader } = this.state;
+    const { showOfficeBannerAboveHeader } = this.state;
 
     if (this.hideHeader()) {
       renderLog('Header hidden');
@@ -191,6 +193,7 @@ export default class Header extends Component {
     }
     const pathname = normalizedHref();
     const isCandidatePage = /^\/[-a-z0-9]+\/-\/?$/.test(pathname);
+    const isOfficePage = /^\/office\/[a-z0-9]+\/?$/.test(pathname);
     const { hideHeader, params } = this.props;
     // console.log('Header global.weVoteGlobalHistory', global.weVoteGlobalHistory);
     const {
@@ -248,9 +251,9 @@ export default class Header extends Component {
       }
       return (
         <div id="app-header">
-          <IPhoneSpacer />
+          {isCordova() ? <CordovaTopOfScreenSpacer /> : ''}
           <HeadroomWrapper id="hw1">
-            <div className={pageHeaderClasses} style={cordovaTopHeaderTopMargin()} id="header-container">
+            <div className={pageHeaderClasses} id="header-container">
               <Suspense fallback={<></>}>
                 {headerBarObject}
               </Suspense>
@@ -307,9 +310,9 @@ export default class Header extends Component {
       // console.log('isCordovaWide()', isCordovaWide(), 'innerWidth', innerWidth, 'tabMin', tabMin, 'isTablet()', isTablet());
       return (
         <div id="app-header">
-          <IPhoneSpacer />
+          {isCordova() ? <CordovaTopOfScreenSpacer /> : ''}
           <HeadroomWrapper id="hw2">
-            <div className={pageHeaderClasses} style={cordovaTopHeaderTopMargin()} id="header-container">
+            <div className={pageHeaderClasses} id="header-container">
               { showBackToSettingsDesktop && (
                 <span id="inner_for_showBackToSettingsDesktop">
                   { (!isAndroidSizeWide() && displayNoneIfSmallerThanDesktop().length > 0) && (
@@ -413,10 +416,10 @@ export default class Header extends Component {
 
       return (
         <div id="app-header">
-          <IPhoneSpacer />
+          {isCordova() ? <CordovaTopOfScreenSpacer /> : ''}
           <HeadroomWrapper id="hw3">
             {/* <div className={isWebApp ? 'headroom-wrapper-webapp__default' : ''} id="headroom-wrapper"> */}
-            <div className={pageHeaderClasses} style={cordovaTopHeaderTopMargin()} id="header-container">
+            <div className={pageHeaderClasses} id="header-container">
               <Suspense fallback={<></>}>
                 { showBackToValues ?
                   <HeaderBackTo backToLink={backToValuesLink} backToLinkText={backToValuesLinkText} /> :
@@ -480,15 +483,22 @@ export default class Header extends Component {
       // console.log('Header not in any mode, headerNotVisible:', headerNotVisible);
       return (
         <div id="app-header">
-          <IPhoneSpacer />
+          {isCordova() ? <CordovaTopOfScreenSpacer /> : ''}
           <HeadroomWrapper id="hw4">
-            <div className={pageHeaderClasses} style={cordovaTopHeaderTopMargin()} id="header-container">
+            <div className={pageHeaderClasses} id="header-container">
               {(showNotificationBannerAboveHeader && isCandidatePage) && (
                 <NotificationBannerAboveHeaderWrapper>
                   <Suspense fallback={<></>}>
                     <NotificationBannerAboveHeader />
                   </Suspense>
                 </NotificationBannerAboveHeaderWrapper>
+              )}
+              {(showOfficeBannerAboveHeader && isOfficePage) && (
+                <OfficeBannerAboveHeaderWrapper>
+                  <Suspense fallback={<></>}>
+                    <OfficeBannerAboveHeader />
+                  </Suspense>
+                </OfficeBannerAboveHeaderWrapper>
               )}
               {(headerNotVisible || hideHeader) ? (
                 <>
@@ -585,6 +595,12 @@ const BackToSettingsMobileDesktopSpan = styled('span')`
 `;
 
 const NotificationBannerAboveHeaderWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+`;
+const OfficeBannerAboveHeaderWrapper = styled.div`
+  background: rgb(31, 58, 83);
   display: flex;
   justify-content: center;
   padding: 0 16px;

@@ -56,26 +56,26 @@ function getVersionsFromConfigXML () {
   let regex = /version="(.*?)"/;
   let found = data.match(regex);
   if (found.length > 0) {
-    console.log('version from config.xml: ', found[1]);
+    console.log('> Cordova: version from config.xml: ', found[1]);
     versions.version = found[1];
   } else {
-    console.log('version from config.xml: error');
+    console.log('> Cordova: version from config.xml: error');
   }
   regex = /ios-CFBundleVersion="(.*?)"/;
   found = data.match(regex);
-  if (found.length > 0) {
-    console.log('ios-CFBundleVersion from config.xml: ', found[1]);
+  if (found && found.length > 0) {
+    console.log('> Cordova: ios-CFBundleVersion from config.xml: ', found[1]);
     versions.iosBundleVersion = found[1];
   } else {
-    console.log('ios-CFBundleVersion from config.xml: error');
+    console.log('> Cordova: ios-CFBundleVersion from config.xml: error');
   }
   regex = /android-versionCode="(.*?)"/;
   found = data.match(regex);
-  if (found.length > 0) {
-    console.log('android-versionCode from config.xml: ', found[1]);
+  if (found && found.length > 0) {
+    console.log('> Cordova: android-versionCode from config.xml: ', found[1]);
     versions.androidBundleVersion = found[1];
   } else {
-    console.log('android-versionCode from config.xml: error');
+    console.log('> Cordova: android-versionCode from config.xml: error');
   }
   return versions;
 }
@@ -171,20 +171,23 @@ function fileRewriterForCordova (path, versions) {
       './srcCordova/js/common/components/Donation/InjectedCheckoutForm.jsx',
       './srcCordova/js/common/components/Donation/CheckoutForm.jsx',
     ];
-    const dummySubstituteFiles = [
-      './srcCordova/js/common/components/CampaignSupport/PayToPromoteProcess.jsx',
-      // './srcCordova/js/pages/More/Donate.jsx',
-    ];
+    // const dummySubstituteFiles = [
+    //   './srcCordova/js/common/components/CampaignSupport/PayToPromoteProcess.jsx',
+    //   // './srcCordova/js/pages/More/Donate.jsx',
+    // ];
 
     if (deleteFiles.includes(path)) {
       fs.remove(path);
-      console.log(`rm file ${path}`);
-    } else if (dummySubstituteFiles.includes(path)) {
-      const cordovaPath = path.replace('.jsx', 'Cordova.jsx');
-      fs.rename(cordovaPath, path, (err2) => {
-        if (err2) console.log(`rename file ERROR: ${err}`);
-      });
-      fs.remove(cordovaPath);
+      console.log(`> Removed: rm file ${path}`);
+    // } else if (dummySubstituteFiles.includes(path)) {
+    // Removes files that have includes that cause problems in cordova -- these were Stripe related,
+    // but the stripe problem no longer manifested in Oct 2025, and Dale wanted the non-functional
+    // "Help Win" dialog restored so that they could see how many people went down that path in Google Analytics
+    //   const cordovaPath = path.replace('.jsx', 'Cordova.jsx');
+    //   fs.rename(cordovaPath, path, (err2) => {
+    //     if (err2) console.log(`rename file ERROR: ${err}`);
+    //   });
+    //   fs.remove(cordovaPath);
     } else {
       fs.writeFile(path, newValue, 'utf-8', (err2) => {
         if (err2) throw err2;
@@ -231,13 +234,13 @@ fs.remove('./build').then(() => {
               if (!(out.length === 1 && out[1] === undefined)) {
                 console.log('> Cordova: Files that (incorrectly) still contain React.lazy: ');
                 console.log(out);
-                console.log('> Cordova: The files listed above, need to be fixed before proceeding!');  // Or the regex needs adjustment
+                console.error('> Cordova: The files listed above, need to be fixed before proceeding!');  // Or the regex needs adjustment
               }
             });
         });
       });
     } catch (err) {
-      console.log(err);
+      console.error(`> Cordova caught error: ${err}`);
     }
   });
 });

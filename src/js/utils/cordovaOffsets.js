@@ -1,12 +1,13 @@
-import { getAndroidSize, hasIPhoneNotch, isIOS, isIOSAppOnMac, isIPad, isIPadGiantSize, isIPhone4in, isIPhone4p7in, isIPhone5p5inEarly, isIPhone5p5inMini, isIPhone5p8in, isIPhone6p1in, isIPhone6p5in, isSimulator } from '../common/utils/cordovaUtils';
+import { getAndroidSize, hasCordovaNotch, heightOfCordovaSpacer, isIOS, isIOSAppOnMac, isIPad, isIPadGiantSize, isIPhone4in, isIPhone4p7in, isIPhone5p5inEarly, isIPhone5p5inMini, isIPhone5p8in, isIPhone6p1in, isIPhone6p5in, isIPhoneMiniOrSmaller, isSimulator } from '../common/utils/cordovaUtils';
 import { normalizedHref } from '../common/utils/hrefUtils';
-import { isAndroid, isCordova, isWebApp } from '../common/utils/isCordovaOrWebApp';
+import { isAndroid, isWebApp } from '../common/utils/isCordovaOrWebApp';
 import isMobileScreenSize from '../common/utils/isMobileScreenSize';
 import { cordovaOffsetLog } from '../common/utils/logging';
 import CordovaPageConstants from '../constants/CordovaPageConstants';
 import { getApplicationViewBooleans } from './applicationUtils';
 import { pageEnumeration } from './cordovaUtilsPageEnumeration';
 
+/* global $ */
 
 //  <PageContentContainer>
 // This determines where the top of the "All", "Choices" and "Decided" tabs should start.
@@ -53,15 +54,13 @@ export function cordovaBallotFilterTopMargin () {
         return '79px';
       }
       return '89px';
-    } else if (hasIPhoneNotch()) {
+    } else if (hasCordovaNotch()) {
       if (page === CordovaPageConstants.candidateWild) {
         return '65px';
       }
     } else if (isIOSAppOnMac()) {
       if (page === CordovaPageConstants.news) {
         return '69px';
-      // } else if (pageEnumeration === CordovaPageConstants.friends) {
-      //   return '0px'; // test hack
       }
       return '3px';
     } else if (isIPad()) {
@@ -118,7 +117,7 @@ export function cordovaNetworkNextButtonTop () {
       return '85vh';
     } else if (isIPhone4p7in()) {
       return '89vh';
-    } else if (hasIPhoneNotch()) {
+    } else if (hasCordovaNotch()) {
       return '88vh';
     } else if (isIPad()) {
       return '89vh';
@@ -134,37 +133,16 @@ export function cordovaNetworkNextButtonTop () {
   return undefined;
 }
 
-// <div className="container-main">
-export function cordovaContainerMainOverride () {
-  if (isIOS()) {
-    if (isIPhone6p5in()) {
-      return '34px';
-    }
-  } else if (isAndroid()) {
-    const sizeString = getAndroidSize();
-    if (sizeString === '--fold') {
-      return '0px';
-    }
-    if (sizeString === '--xl') {
-      return '0px';
-    }
-    if (sizeString === '--lg') {
-      return '0px';
-    }
-    if (sizeString === '--md') {
-      return '0px';
-    }
-    if (sizeString === '--sm') {
-      return '16px';
-    }
-  }
-  return undefined;
-}
-
 // <div className="footer-container u-show-mobile-tablet" style={cordovaFooterHeight()}>
 export function cordovaFooterHeight () {
   if (isIOS()) {
-    if (hasIPhoneNotch()) {
+    if (isIPhoneMiniOrSmaller()) {
+      return {
+        height: '63px',
+        paddingTop: '4px',
+      };
+    }
+    if (hasCordovaNotch()) {
       return {
         height: '95px',
         paddingTop: '10px',
@@ -173,34 +151,6 @@ export function cordovaFooterHeight () {
   }
 
   return undefined;
-}
-
-// URLs that end with a twitter handle...
-// <div id="the styled div that follows is the wrapper for voter guide mode">
-//   <Wrapper padTop={cordovaVoterGuideTopPadding()}>
-// This pushes down the voter guide organization Twitter banner - parallel to voterGuideWild
-export function cordovaVoterGuideTopPadding () {
-  if (isIOS()) {
-    const page = pageEnumeration();
-    if (isIPhone5p5inEarly()) {
-      return '11px';
-    } else if (isIPhone5p5inMini()) {
-      return '11px';
-    } else if (isIPhone4p7in()) {
-      return '0px';
-    } else if (hasIPhoneNotch()) {
-      return '28px';
-    } else if (isIPad()) {
-      switch (page) {
-        case CordovaPageConstants.news:             return '19px';
-        case CordovaPageConstants.voterGuideWild:   return '26px';
-        default:                                    return '0px';
-      }
-    }
-  } else if (isAndroid()) {
-    return '0px';
-  }
-  return '12px';
 }
 
 // <Toolbar classes={{ root: classes.toolbar }} disableGutters style={{ top: cordovaWelcomeAppToolbarTop() }}>
@@ -212,7 +162,7 @@ export function cordovaWelcomeAppToolbarTop () {
       return '10px';
     } else if (isIPhone4p7in()) {
       return '10px';
-    } else if (hasIPhoneNotch()) {
+    } else if (hasCordovaNotch()) {
       return '14px';
     } else if (isIPad()) {
       return '10px';
@@ -261,7 +211,7 @@ export function cordovaVoteMiniHeader () {
         top: '91px',
         height: '118px',
       };
-    } else if (hasIPhoneNotch()) {
+    } else if (hasCordovaNotch()) {
       return {
         top: '82px',
         height: '125px',
@@ -288,26 +238,19 @@ export function cordovaVoteMiniHeader () {
   return undefined;
 }
 
-
-// <MeasureStickyHeaderWrapper styled>
+// November 2nd, 2025:  This is an irregular measurement, since the HeadroomWrapper has a zero height
+// Easier to calculate the size, than keep working on removing the Top attribute from an AppBar
 export function cordovaStickyHeaderPaddingTop () {
   if (isIOS()) {
-    if (isIPhone4p7in()) {
-      return '68px';
-    } else if (isIPhone5p5inEarly()) {
-      return '68px';
-    } else if (isIPhone5p5inMini()) {
-      return '83px';
-    } else if (isIPhone5p8in()) {
-      return '100px';
-    } else if (isIPhone6p1in()) {
-      return '81px';
-    } else if (isIPhone6p5in()) {
-      return '100px';
-    } else if (hasIPhoneNotch()) {
-      return '76px';
-    } else if (isIPad() || isIOSAppOnMac()) {
-      return '72px';
+    // 11/20/25, we want to cover the Measure title (on TopRowTwo), so it does not appear twice
+    const rowOneLeft = $("div[class^='TopRowOneLeftContainer']");
+    if (isIOS() && rowOneLeft.length) {
+      const height = heightOfCordovaSpacer();
+      const heightAppBar = rowOneLeft.outerHeight();
+      const total = height + heightAppBar;
+      const ret = total > 0 ? `${total}px` : '';
+      cordovaOffsetLog(`cordovaStickyHeaderPaddingTop : ${total}, ret: '${ret}', page: ${pageEnumeration()}`);
+      return ret;
     }
   } else if (isAndroid()) {
     const sizeString = getAndroidSize();
@@ -329,32 +272,32 @@ export function cordovaStickyHeaderPaddingTop () {
   return '';
 }
 
-export function cordovaSignInModalTopPosition (collapsed) {
-  if (isIOS()) {
-    if (isIPhone6p5in()) {                    //  11 Pro Max and XS Max
-      return collapsed ? '01%' : '-25%';
-    } else if (isIPhone6p1in()) {             // XR and 11
-      return collapsed ? '01%' : '-25%';
-    } else if (isIPhone5p8in()) {             //  X and 11 Pro
-      return collapsed ? '300px' : '-206px';
-    } else if (isIPhone5p5inEarly()) {        //  6 Plus, 7 Plus and 8 Plus
-      return collapsed ? '-3%' : '-170px';
-    } else if (isIPhone5p5inMini()) {        //  12 Mini, 13 Mini
-      return collapsed ? '-3%' : '-170px';
-    } else if (isIPhone4p7in()) {             // 6, 7, 8
-      return collapsed ? 'unset' : '-24%';
-    } else if (isIPhone4in()) {               // SE
-      return collapsed ? '30px' : '-18%';
-    } else if (isIPad()) {
-      return collapsed ? '-5%' : '-22%';
-    } else {
-      return collapsed ? '-30%' : '-15%';
-    }
-  } else if (isAndroid()) {
-    return collapsed ? '-30%' : '-25%';
-  }
-  return '';
-}
+// export function cordovaSignInModalTopPosition (collapsed) {
+//   if (isIOS()) {
+//     if (isIPhone6p5in()) {                    //  11 Pro Max and XS Max
+//       return collapsed ? '01%' : '-25%';
+//     } else if (isIPhone6p1in()) {             // XR and 11
+//       return collapsed ? '01%' : '-25%';
+//     } else if (isIPhone5p8in()) {             //  X and 11 Pro
+//       return collapsed ? '300px' : '-206px';
+//     } else if (isIPhone5p5inEarly()) {        //  6 Plus, 7 Plus and 8 Plus
+//       return collapsed ? '-3%' : '-170px';
+//     } else if (isIPhone5p5inMini()) {        //  12 Mini, 13 Mini
+//       return collapsed ? '-3%' : '-170px';
+//     } else if (isIPhone4p7in()) {             // 6, 7, 8
+//       return collapsed ? 'unset' : '-24%';
+//     } else if (isIPhone4in()) {               // SE
+//       return collapsed ? '30px' : '-18%';
+//     } else if (isIPad()) {
+//       return collapsed ? '-5%' : '-22%';
+//     } else {
+//       return collapsed ? '-30%' : '-15%';
+//     }
+//   } else if (isAndroid()) {
+//     return collapsed ? '-30%' : '-25%';
+//   }
+//   return '';
+// }
 
 function measureFooterContainer () {
   try {
@@ -375,7 +318,7 @@ export function shareBottomOffset (pinToBottom) {
   const { showFooterBar } = getApplicationViewBooleans(normalizedHref());
 
   if (isIOS()) {
-    if (hasIPhoneNotch()) {
+    if (hasCordovaNotch()) {
       return showFooterBar ? `${measureFooterContainer()}px` : '18px';
     } else if (isIPhone4p7in() || isIPhone5p5inEarly()) {
       return showFooterBar ? `${measureFooterContainer()}px` : '0px';
@@ -392,15 +335,13 @@ export function shareBottomOffset (pinToBottom) {
 
 export function cordovaFriendsWrapper () {
   if (isIOS()) {
-    if (isIPhone5p8in()) {
+    if (isIPhoneMiniOrSmaller()) {
       return {
-        paddingTop: '69px',
         paddingBottom: '90px',
       };
     }
     if (isIPhone6p1in()) {
       return {
-        // paddingTop: '69px',
         paddingBottom: '90px',
       };
     }
@@ -411,13 +352,13 @@ export function cordovaFriendsWrapper () {
         };
       }
       return {
-        paddingTop: '30px',
+        // paddingTop: '30px',
         paddingBottom: '90px',
       };
     }
     if (isIPad()) {
       return {
-        paddingTop: '145px',
+        paddingTop: `${heightOfCordovaSpacer(false) + 10}px`,
         paddingBottom: '90px',
       };
     }
@@ -464,23 +405,17 @@ export function cordovaDrawerTopMargin () {
   if (isIOS()) {
     if (isIPhone4in() || isIPhone4p7in() || isIPhone5p5inEarly()) {
       return '22px';
-    } else if (hasIPhoneNotch()) {
+    } else if (hasCordovaNotch()) {
       return '40px';
     } else if (isIPad()) {
       return '26px';
+    } else {
+      return '52px';
     }
   } else if (isAndroid()) {
     return '0px';
   }
   return '0px';
-}
-
-
-export function cordovaDualHeaderContainerPadding () {
-  if (isIPhone5p5inMini()) return '18px';
-  if (hasIPhoneNotch()) return '0px';
-  if (isCordova()) return '80px';
-  return '8px';
 }
 
 export function welcomeAppBarPaddingTop () {
@@ -500,4 +435,11 @@ export function welcomeAppBarPaddingTop () {
       return '0';
     default:                    return '0';
   }
+}
+
+export function cordovaDualHeaderContainerTopOffset () {
+  if (isWebApp()) return '';
+  const heightIOSSpacer = heightOfCordovaSpacer();
+  cordovaOffsetLog(`cordovaDualHeaderContainerTopOffset heightIOSSpacer: ${heightIOSSpacer} returned ${heightIOSSpacer}px`);
+  return  `${heightIOSSpacer}px`;
 }

@@ -4,9 +4,11 @@ import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { Edit as EditIcon } from '@mui/icons-material';
+import TagManager from 'react-gtm-module';
 import SupportActions from '../../actions/SupportActions';
 import { prepareForCordovaKeyboard, restoreStylesAfterCordovaKeyboard } from '../../common/utils/cordovaUtils';
 import { isAndroid } from '../../common/utils/isCordovaOrWebApp';
+import isMobileScreenSize from '../../common/utils/isMobileScreenSize';
 import { renderLog } from '../../common/utils/logging';
 import AppObservableStore from '../../common/stores/AppObservableStore';
 import PoliticianStore from '../../common/stores/PoliticianStore';
@@ -24,16 +26,15 @@ import DesignTokenColors from '../../common/components/Style/DesignTokenColors';
 import { SpeakerName, SpeakerStatement, SpeakerStatementWrapper } from '../../common/components/Style/PositionDisplayStyles';
 import SpeakerEndorsedOrOpposedSnippet from '../../common/components/Position/SpeakerEndorsedOrOpposedSnippet';
 import VoterPositionEditTripleDot from '../../common/components/Position/VoterPositionEditTripleDot';
+import { getPageDetails } from '../../utils/lookupPageNameAndPageTypeDict';
 
 const ItemActionBar = React.lazy(() => import(/* webpackChunkName: 'ItemActionBar' */ '../Widgets/ItemActionBar/ItemActionBar'));
 const ReadMore = React.lazy(() => import(/* webpackChunkName: 'ReadMore' */ '../../common/components/Widgets/ReadMore'));
-
 const VoterPositionEntryAndDisplay = ({ classes, externalUniqueId, politicianWeVoteId }) => {
   const politicianWeVoteIdRef = useRef(politicianWeVoteId);
   // console.log('VoterPositionEntryAndDisplay, politicianWeVoteId:', politicianWeVoteId, ', politicianWeVoteIdRef.current:', politicianWeVoteIdRef.current);
   const { allCachedPoliticians } = PoliticianStore.getState();
 
-  const [initialFocusSet, setInitialFocusSet] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [politicianName, setPoliticianName] = useState('');
   const [position, setPosition] = useState({});
@@ -68,8 +69,33 @@ const VoterPositionEntryAndDisplay = ({ classes, externalUniqueId, politicianWeV
     }
   };
 
-  const toggleEditModalLocal = () => {
+  const toggleEditModalLocal = (isClosedWithoutSubmitting = true) => {
+    // Track modal close event only when user closes without submitting (e.g., clicking X button)
+    // When closing after successful submission, pass false to avoid duplicate tracking
+    if (showEditModal && isClosedWithoutSubmitting) {
+      let stanceLabel = 'Not sure yet';
+      if (selectedStance === 'SUPPORT') {
+        stanceLabel = 'Supporting';
+      } else if (selectedStance === 'OPPOSE') {
+        stanceLabel = 'Opposing';
+      }
+
+      const dataLayerObject = {
+        event: 'opinion_modal_closed',
+        pageDetails: getPageDetails(),
+        userDetails: VoterStore.getAnalyticsUserDetails(),
+        actionDetails: {
+          stance: stanceLabel,
+          hasOpinionText: statementText.trim() !== '',
+          politicianName,
+        },
+      };
+
+      TagManager.dataLayer({ dataLayer: dataLayerObject });
+    }
+
     setShowEditModal((prev) => !prev); // Toggle the modal
+
     if (showEditModal) {
       restoreStylesAfterCordovaKeyboard('VoterPositionEntryAndDisplay');
     }
@@ -139,8 +165,8 @@ const VoterPositionEntryAndDisplay = ({ classes, externalUniqueId, politicianWeV
   };
 
   const handleOpinionChange = (event) => {
-    // console.log('VoterPositionEntryAndDisplay handleOpinionChange event.target.value: ', event.target.value);
-    setSelectedStance(event.target.value);
+    const newStance = event.target.value;
+    setSelectedStance(newStance);
   };
 
   useEffect(() => {
@@ -160,17 +186,23 @@ const VoterPositionEntryAndDisplay = ({ classes, externalUniqueId, politicianWeV
     if (politicianWeVoteId) {
       onSupportStoreChange();
     }
-  }, [politicianWeVoteId]);
+  }, [politicianWeVoteId, onSupportStoreChange]);
 
   useEffect(() => {
-    if (activityPostInputRef.current && !initialFocusSet) {
+    if (!showEditModal) return undefined;
+    const focusInput = () => {
       const input = activityPostInputRef.current;
-      const { length } = input.value;
-      input.focus();
-      input.setSelectionRange(length, length);
-      setInitialFocusSet(true);
-    }
-  }, [initialFocusSet]);
+      if (input) {
+        input.focus();
+        const { length } = input.value;
+        input.setSelectionRange(length, length);
+      }
+    };
+    const raf = requestAnimationFrame(focusInput);
+    return () => {
+      cancelAnimationFrame(raf);
+    };
+  }, [showEditModal]);
 
   useEffect(() => {
     const supportStoreListener = SupportStore.addListener(onSupportStoreChange);
@@ -209,9 +241,29 @@ const VoterPositionEntryAndDisplay = ({ classes, externalUniqueId, politicianWeV
     const ballotItemWeVoteId = '';
     const visibilitySetting = visibilityIsPublic ? 'SHOW_PUBLIC' : 'FRIENDS_ONLY';
     const kindOfBallotItem = 'CANDIDATE';
-    // console.log('savePosition, selectedStance: ', selectedStance, ', visibilitySetting: ', visibilitySetting);
+
+    let stanceLabel = 'Not sure yet';
+    if (selectedStance === 'SUPPORT') {
+      stanceLabel = 'Supporting';
+    } else if (selectedStance === 'OPPOSE') {
+      stanceLabel = 'Opposing';
+    }
+
+    const dataLayerObject = {
+      event: 'opinion_submitted',
+      pageDetails: getPageDetails(),
+      userDetails: VoterStore.getAnalyticsUserDetails(),
+      actionDetails: {
+        stance: stanceLabel,
+        hasOpinionText: statementText.trim() !== '',
+        politicianName,
+      },
+    };
+
+    TagManager.dataLayer({ dataLayer: dataLayerObject });
+
     SupportActions.voterPositionCommentSave(ballotItemWeVoteId, kindOfBallotItem, politicianWeVoteId, statementText, selectedStance, visibilitySetting);
-    toggleEditModalLocal();
+    toggleEditModalLocal(false);
   };
 
   const updateStatementTextToBeSaved = (e) => {
@@ -279,6 +331,7 @@ const VoterPositionEntryAndDisplay = ({ classes, externalUniqueId, politicianWeV
               placeholder="What's your opinion?"
               onClick={onClick}
               readOnly
+              style={{ overflow: 'hidden' }}
             />
           </CommentContainer>
         )}
@@ -385,7 +438,7 @@ const VoterPositionEntryAndDisplay = ({ classes, externalUniqueId, politicianWeV
           <FormControlLabel
             value="INFO_ONLY"
             control={<Radio color="primary" />}
-            label="Info only"
+            label="Not sure yet"
             classes={{ root: classes.radioLabel }}
           />
         </RadioGroup>
@@ -411,7 +464,7 @@ const VoterPositionEntryAndDisplay = ({ classes, externalUniqueId, politicianWeV
           // disabled={!statementText} // Commented out to allow saving without statement
           disabled={selectedStance === 'INFO_ONLY' && (!statementText || statementText.trim() === '')} // Disable if Neutral and no text
         >
-          {positionExists ? 'Save Changes' : 'Add opinion' }
+          {positionExists ? 'Save Changes' : 'Add opinion'}
         </Button>
       </TextFieldForm>
     </TextFieldWrapper>
@@ -484,7 +537,7 @@ VoterPositionEntryAndDisplay.propTypes = {
 };
 
 const CommentContainerWrapper = styled('div')`
-  width: 100%;
+  width: ${isMobileScreenSize() ? '80%' : '100%'};
 `;
 
 const ItemActionBarContainer = styled('div')`

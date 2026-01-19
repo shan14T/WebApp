@@ -2,6 +2,15 @@ import Dispatcher from '../dispatcher/Dispatcher';
 import arrayContains from '../utils/arrayContains';
 
 export default {
+  politicianCampaignWebsiteSave (politicianWeVoteId, campaignWebsite) {
+    Dispatcher.loadEndpoint('politicianSave',
+      {
+        campaign_website: campaignWebsite,
+        campaign_website_changed: true,
+        politician_we_vote_id: politicianWeVoteId,
+      });
+  },
+
   politicianNameSave (politicianWeVoteId, politicianName) {
     Dispatcher.loadEndpoint('politicianSave',
       {
@@ -41,10 +50,32 @@ export default {
     Dispatcher.dispatch({ type: 'profilePhotoTooBigReset', payload: true });
   },
 
-  politicianRetrieve (politicianWeVoteId) {
-    Dispatcher.loadEndpoint('politicianRetrieve',
+  politicianPoliticalPartySave (politicianWeVoteId, politicalParty) {
+    Dispatcher.loadEndpoint('politicianSave',
       {
+        political_party: politicalParty,
+        political_party_changed: true,
         politician_we_vote_id: politicianWeVoteId,
+      });
+  },
+
+  politicianRetrieve (politicianWeVoteId, asOwner = false) {
+    if (asOwner) {
+      Dispatcher.loadEndpoint('politicianRetrieveAsOwner',
+        {
+          politician_we_vote_id: politicianWeVoteId,
+        });
+    } else {
+      Dispatcher.loadEndpoint('politicianRetrieve',
+        {
+          politician_we_vote_id: politicianWeVoteId,
+        });
+    }
+  },
+
+  politiciansManagedRetrieve () {
+    Dispatcher.loadEndpoint('politiciansManagedRetrieve',
+      {
       });
   },
 
@@ -57,12 +88,11 @@ export default {
       });
   },
 
-  politiciansQuery (electionDay = '', raceOfficeLevelList = '', stateCode = '', searchText = '') {
+  politiciansQuery (raceOfficeLevelList = '', stateCode = '', searchText = '') {
     Dispatcher.loadEndpoint('politiciansQuery',
       {
-        electionDay,
-        raceOfficeLevelList,
-        searchText,
+        race_office_level_list: raceOfficeLevelList,
+        search_text: searchText,
         state: stateCode,
         useWeVoteFormat: 1,
       });
@@ -75,14 +105,22 @@ export default {
       });
   },
 
-  politicianRetrieveBySEOFriendlyPath (politicianSEOFriendlyPath) {
+  politicianRetrieveBySEOFriendlyPath (politicianSEOFriendlyPath, asOwner = false) {
     let { hostname } = window.location;
     hostname = hostname || '';
-    Dispatcher.loadEndpoint('politicianRetrieve',
-      {
-        hostname,
-        seo_friendly_path: politicianSEOFriendlyPath,
-      });
+    if (asOwner) {
+      Dispatcher.loadEndpoint('politicianRetrieveAsOwner',
+        {
+          hostname,
+          seo_friendly_path: politicianSEOFriendlyPath,
+        });
+    } else {
+      Dispatcher.loadEndpoint('politicianRetrieve',
+        {
+          hostname,
+          seo_friendly_path: politicianSEOFriendlyPath,
+        });
+    }
   },
 
   positionListForBallotItemPublic (ballotItemWeVoteId) {
@@ -110,5 +148,9 @@ export default {
         ballot_item_we_vote_id: ballotItemWeVoteId,
         kind_of_ballot_item: 'POLITICIAN',
       });
+  },
+
+  voterCanEditPolitician (politicianWeVoteId) {
+    Dispatcher.dispatch({ type: 'voterCanEditPolitician', payload: politicianWeVoteId });
   },
 };

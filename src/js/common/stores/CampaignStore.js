@@ -701,6 +701,8 @@ class CampaignStore extends ReduceStore {
         return revisedState;
 
       case 'politicianRetrieve':
+      case 'politicianRetrieveAsOwner':
+      case 'politicianSave':
         // For the candidate-related data attached to the Politician, create a pseudo-CampaignX object
         //  which is needed for objects like HeartFavoriteToggle
         candidateList = action.res.candidate_list;
@@ -763,6 +765,35 @@ class CampaignStore extends ReduceStore {
         voterSpecificData = this.resetVoterSpecificData();
         revisedState = { ...revisedState, voterSpecificData };
         return revisedState;
+
+      case 'voterUpdate':
+        // This fires after VoterActions.voterAccountDelete()
+        // when the backend returns voter_deleted: true
+        if (action.res && action.res.voter_deleted) {
+          const updatedDict = { ...allCachedCampaignXDicts };
+          const supportedIds = voterSpecificData?.voterSupportedCampaignXWeVoteIds || [];
+
+          supportedIds.forEach((campaignXWeVoteId) => {
+            const existing = updatedDict[campaignXWeVoteId];
+            if (!existing) return;
+
+            const currentCount = existing.supporters_count || 0;
+
+            updatedDict[campaignXWeVoteId] = {
+              ...existing,
+              supporters_count: Math.max(0, currentCount - 1),
+            };
+          });
+
+          const clearedVoterSpecificData = this.resetVoterSpecificData();
+
+          return {
+            ...state,
+            allCachedCampaignXDicts: updatedDict,
+            voterSpecificData: clearedVoterSpecificData,
+          };
+        }
+        return state;
 
       default:
         return state;

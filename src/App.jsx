@@ -12,11 +12,12 @@ import VoterSessionActions from './js/actions/VoterSessionActions';
 import muiTheme from './js/common/components/Style/muiTheme';
 import LoadingWheelComp from './js/common/components/Widgets/LoadingWheelComp';
 import AppObservableStore, { messageService } from './js/common/stores/AppObservableStore';
-import { getAndroidSize, getIOSSizeString, hasDynamicIsland, isIOS } from './js/common/utils/cordovaUtils';
+import { hasDynamicIsland, hasCordovaNotch, heightOfCordovaSpacer } from './js/common/utils/cordovaUtils';
 import historyPush from './js/common/utils/historyPush';
 import { isWeVoteMarketingSite, normalizedHref } from './js/common/utils/hrefUtils';
 import initializejQuery from './js/common/utils/initializejQuery';
 import { isAndroid, isCordova, isWebApp } from './js/common/utils/isCordovaOrWebApp';
+import Cookies from './js/common/utils/js-cookie/Cookies';
 import { renderLog } from './js/common/utils/logging';
 import Header from './js/components/Navigation/Header';
 import HeaderBarSuspense from './js/components/Navigation/HeaderBarSuspense';
@@ -24,6 +25,7 @@ import webAppConfig from './js/config';
 import VoterStore from './js/stores/VoterStore';
 import initializeFacebookSDK from './js/utils/initializeFacebookSDK';
 import RouterV5SendMatch from './js/utils/RouterV5SendMatch';
+import flashCursorClickListener from './js/common/utils/flashCursorClickListener';
 // importRemoveCordovaListenersToken1  -- Do not remove this line!
 
 // Root URL pages
@@ -85,7 +87,7 @@ const HowWeVoteHelps = React.lazy(() => import(/* webpackChunkName: 'HowWeVoteHe
 const Intro = React.lazy(() => import(/* webpackChunkName: 'Intro' */ './js/pages/Intro/Intro'));
 const IntroNetwork = React.lazy(() => import(/* webpackChunkName: 'IntroNetwork' */ './js/pages/Intro/IntroNetwork'));
 const Location = React.lazy(() => import(/* webpackChunkName: 'Location' */ './js/pages/Settings/Location'));
-const ManageMyCandidates = React.lazy(() => import(/* webpackChunkName: 'ManageMyCandidates' */ './js/pages/More/ManageMyCandidates'));
+const ManageMyCandidatesLanding = React.lazy(() => import(/* webpackChunkName: 'ManageMyCandidatesLanding' */ './js/pages/ManageMyCandidates/ManageMyCandidatesLanding'));
 const Measure = React.lazy(() => import(/* webpackChunkName: 'Measure' */ './js/pages/Ballot/Measure'));
 const News = React.lazy(() => import(/* webpackChunkName: 'News' */ './js/pages/Activity/News'));
 const Office = React.lazy(() => import(/* webpackChunkName: 'Office' */ './js/pages/Ballot/Office'));
@@ -200,7 +202,7 @@ class App extends Component {
       // July 2025, Android "backbutton" is not handled since pushHistory is only keeping the previous location, so pressing "backbutton" twice would be a mess
       // Also it was originally noted as a bug in the How it Works dialog, which would be a special case that would not use pushHistory
       // This listener is for Chrome on an Android device while browsing wevote.us
-      document.addEventListener("backbutton", () => {}, false);
+      document.addEventListener('backbutton', () => {}, false);
       // if isCordova(), then this is handled in startCordova, after the deviceready event
     }
 
@@ -219,13 +221,16 @@ class App extends Component {
     }
 
     if (isCordova()) {
-      const size = isIOS() ?  getIOSSizeString() : getAndroidSize();
-      console.log('Cordova:   device model', window.device.model, '  size: ', size);
-      console.log('Cordova:   Header, hasDynamicIsland', hasDynamicIsland());
+      console.log(`Cordova:   window.device ${JSON.stringify(window.device)}`);
+      console.log(`Cordova:   Header, isIOS ${hasDynamicIsland()}, heightOfCordovaSpacer ${heightOfCordovaSpacer()}), hasCordovaNotch ${hasCordovaNotch()}`);
     }
 
     this.acceptURLVariables();
     this.bypass2FA();
+
+    if (AppObservableStore.getFlashCursorEnabled()) {
+      this.detatchCursorListener = flashCursorClickListener();
+    }
   }
 
   componentDidUpdate (prevProps) {
@@ -243,6 +248,9 @@ class App extends Component {
   componentWillUnmount () {
     this.appStateSubscription.unsubscribe();
     this.voterStoreListener.remove();
+    if (this.detatchCursorListener) {
+      this.detatchCursorListener();
+    }
     // removeCordovaListenersToken -- Do not remove this line!
   }
 
@@ -288,7 +296,7 @@ class App extends Component {
             },
           };
 
-          console.log('Initializing Google Tag Manager with GTM ID:', weVoteGTMId);
+          console.log(`Initializing Google Tag Manager with GTM ID: ${weVoteGTMId}`);
           TagManager.initialize(tagManagerArgs);
         } else {
           console.log('Google Tag Manager did not receive a valid GTM ID, NOT ENABLED');
@@ -362,12 +370,29 @@ class App extends Component {
 
   acceptURLVariables () {
     const { location: { search: queryString } } = this.props;
-    const { showEditPoliticianNoticeSet  } = this.state;
+    const { fromAdSet, showEditPoliticianNoticeSet, showOfficeBannerAboveHeaderSet  } = this.state;
     const query = new URLSearchParams(queryString);
+    const fromAd = query.get('ad');
+    const showOfficeBannerAboveHeader = query.get('office_intro');
     const showEditPoliticianNotice = query.get('show_edit_politician_notice');
+    const normalizedQuery = new URLSearchParams(queryString.toLowerCase());
+    const flashCursor = normalizedQuery.get('flashcursor');
+    if (fromAd === '1' && !fromAdSet) {
+      this.setState({ fromAdSet: true });
+      Cookies.set('ad_url_variable_used', '1', { expires: 15, path: '/' });
+    }
     if (showEditPoliticianNotice === '1' && !showEditPoliticianNoticeSet) {
       this.setState({ showEditPoliticianNoticeSet: true });
       AppObservableStore.setShowNotificationBannerAboveHeader(true);
+      Cookies.set('politician_url_variable_used', '1', { expires: 15, path: '/' });
+    }
+    if (showOfficeBannerAboveHeader === '1' && !showOfficeBannerAboveHeaderSet) {
+      this.setState({ showOfficeBannerAboveHeaderSet: true });
+      AppObservableStore.setShowOfficeBannerAboveHeader(true);
+    }
+    if (flashCursor === '1') {
+      this.setState({ flashCursor: true });
+      AppObservableStore.setFlashCursorEnabled(true);
     }
   }
 
@@ -525,8 +550,8 @@ class App extends Component {
                   <Route path="/candidate/:candidate_we_vote_id/:organization_we_vote_id" exact component={OrganizationVoterGuideCandidate} />
                   <Route path="/candidate/:candidate_we_vote_id" exact component={Candidate} />
                   <Route path="/challenges/" exact component={ChallengesHomeLoader} />
-                  <Route path="/donate" component={(isNotWeVoteMarketingSite || this.localIsAndroid()) ? ReadyRedirect : Donate} />
-                  <Route path="/donatefaq" component={(isNotWeVoteMarketingSite || this.localIsAndroid()) ? ReadyRedirect : DonateFaq} />
+                  <Route path="/donate" component={(isNotWeVoteMarketingSite) ? ReadyRedirect : Donate} />
+                  <Route path="/donatefaq" component={(isNotWeVoteMarketingSite) ? ReadyRedirect : DonateFaq} />
                   <Route path="/facebook_invitable_friends" component={FacebookInvitableFriends} />
                   <Route path="/findfriends/:set_up_page" exact component={FindFriendsRoot} />
                   <Route path="/findfriends" exact><FindFriendsRoot /></Route>
@@ -575,7 +600,8 @@ class App extends Component {
                   <Route path="/more/faq" component={FAQ} />
                   <Route path="/more/howwevotehelps" component={HowWeVoteHelps} />
                   <Route path="/more/jump" component={SignInJumpProcess} />
-                  <Route path="/more/manage" component={ManageMyCandidates} />
+                  <Route path="/managecandidates/:subtab" exact component={ManageMyCandidatesLanding} />
+                  <Route path="/managecandidates" exact component={ManageMyCandidatesLanding} />
                   <Route path="/more/myballot" component={WeVoteBallotEmbed} />
                   <Route path="/more/network/friends" component={Friends} />
                   <Route path="/more/network/key/:invitation_secret_key/ignore" component={FriendInvitationByEmailVerifyProcess} />

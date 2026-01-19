@@ -35,6 +35,7 @@ const nonFluxState = {
   chosenWebsiteName: '',
   currentPathname: '',
   drawerOpenDict: {},
+  flashCursorEnabled: false,
   getStartedMode: '',
   getVoterGuideSettingsDashboardEditMode: '',
   googleAnalyticsEnabled: false,
@@ -63,11 +64,13 @@ const nonFluxState = {
   showActivityTidbitDrawer: false,
   showAdviserIntroModal: false,
   showAskFriendsModal: false,
+  showBallotChoicesAndSettingsModal: false,
   showChooseOrOpposeIntroModal: false,
   showClaimProfileWithEmailModal: false,
   showClaimProfileWithOtherWaysModal: false,
   showCompleteYourProfileModal: false,
   showNotificationBannerAboveHeader: false,
+  showOfficeBannerAboveHeader: false,
   showEditAddressButton: false,
   showElectionsWithOrganizationVoterGuidesModal: false,
   showHeader: 0,
@@ -171,6 +174,9 @@ export default {
       }
     }
     return false;
+  },
+  getFlashCursorEnabled () {
+    return nonFluxState.flashCursorEnabled;
   },
 
   getPoliticianWeVoteIdBeingViewed () {
@@ -293,6 +299,15 @@ export default {
   setShowNotificationBannerAboveHeader (show) {
     nonFluxState.showNotificationBannerAboveHeader = show;
     messageService.sendMessage('state updated showNotificationBannerAboveHeader');
+  },
+
+  getShowOfficeBannerAboveHeader () {
+    return nonFluxState.showOfficeBannerAboveHeader;
+  },
+
+  setShowOfficeBannerAboveHeader (show) {
+    nonFluxState.showOfficeBannerAboveHeader = show;
+    messageService.sendMessage('state updated showOfficeBannerAboveHeader');
   },
 
   getWeVoteRootURL () {
@@ -478,6 +493,9 @@ export default {
     updatedDrawerOpenDict[drawerOpenGlobalVariableName] = drawerOpen;
     nonFluxState.drawerOpenDict = updatedDrawerOpenDict;
     messageService.sendMessage('state updated drawerOpenDict');
+  },
+  setFlashCursorEnabled (flashCursorEnabled) {
+    nonFluxState.flashCursorEnabled = flashCursorEnabled;
   },
 
   setEvaluateHeaderDisplay () {
@@ -678,6 +696,11 @@ export default {
     messageService.sendMessage('state updated showPersonalizedScoreIntroModal');
   },
 
+  setShowBallotChoicesAndSettingsModal (show) {
+    nonFluxState.showBallotChoicesAndSettingsModal = show;
+    messageService.sendMessage('state updated showBallotChoicesAndSettingsModal');
+  },
+
   setShowPositionDrawer (show) {
     nonFluxState.showPositionDrawer = show;
     messageService.sendMessage('state updated showPositionDrawer');
@@ -780,6 +803,9 @@ export default {
   showAskFriendsModal () {
     return nonFluxState.showAskFriendsModal;
   },
+  showBallotChoicesAndSettingsModal () {
+    return nonFluxState.showBallotChoicesAndSettingsModal;
+  },
 
   showChallengeThanksForJoining () {
     return nonFluxState.showChallengeThanksForJoining;
@@ -814,6 +840,7 @@ export default {
       nonFluxState.showFirstPositionIntroModal ||
       nonFluxState.showHowItWorksModal ||
       nonFluxState.showPersonalizedScoreIntroModal ||
+      nonFluxState.showBallotChoicesAndSettingsModal ||
       nonFluxState.showSelectBallotModal ||
       nonFluxState.showSharedItemModal ||
       nonFluxState.showValuesIntroModal;

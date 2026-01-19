@@ -5,7 +5,7 @@ import withTheme from '@mui/styles/withTheme';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { hasIPhoneNotch, isAndroidSizeWide } from '../../common/utils/cordovaUtils';
+import { hasCordovaNotch, isAndroidSizeWide } from '../../common/utils/cordovaUtils';
 import { isAndroid, isCordova } from '../../common/utils/isCordovaOrWebApp';
 import { renderLog } from '../../common/utils/logging';
 
@@ -25,11 +25,7 @@ class ModalDisplayTemplateA extends Component {
     let dialogPaperCombined;
     if (tallMode) {
       dialogPaperCombined = `${classes.dialogPaper} ${classes.dialogPaperAdditionTall}`;
-    }
-    // if (tallMode) {
-    //   dialogPaperCombined = { ...classes.dialogPaper, ...classes.dialogPaperAdditionTall };
-    // }
-    else {
+    } else {
       dialogPaperCombined = classes.dialogPaper;
     }
     // This template is used by other components like ActivityPostModal, and PositionStatementModal
@@ -82,7 +78,7 @@ export const templateAStyles = (theme) => ({
     paddingTop: !isAndroid() ? 16 : 'inherit',
   },
   dialogPaper: {
-    marginTop: hasIPhoneNotch() ? 68 : 48,
+    marginTop: hasCordovaNotch() ? 68 : 48,
     minHeight: isAndroid() ? '257px' : '200px',
     // maxHeight: '350px',
     // height: '80%',
@@ -165,8 +161,6 @@ const DialogTitleInnerWrapper = styled('div')`
   align-items: flex-start;
   min-height: 28px;
 `;
-
-export const horizontalEllipsis = '\u2026';
 
 export const PostSaveButton = styled('div')`
   width: 100%;

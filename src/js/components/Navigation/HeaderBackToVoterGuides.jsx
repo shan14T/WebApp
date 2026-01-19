@@ -8,7 +8,7 @@ import OrganizationActions from '../../actions/OrganizationActions';
 import VoterGuideActions from '../../actions/VoterGuideActions';
 import LazyImage from '../../common/components/LazyImage';
 import apiCalming from '../../common/utils/apiCalming';
-import { hasIPhoneNotch } from '../../common/utils/cordovaUtils';
+import { hasCordovaNotch } from '../../common/utils/cordovaUtils';
 import historyPush from '../../common/utils/historyPush';
 import { normalizedHref } from '../../common/utils/hrefUtils';
 import { isCordova, isWebApp } from '../../common/utils/isCordovaOrWebApp';
@@ -187,11 +187,13 @@ class HeaderBackToVoterGuides extends Component {
   }
 
   goToSettings () {
-    if (isMobileScreenSize()) {
-      historyPush('/settings/hamburger');
-    } else {
-      historyPush('/settings/general');
-    }
+    console.log('goToSettings IN HeaderBackToVoterGuides historyPush');
+    AppObservableStore.setDrawerOpen('headerProfileDrawerOpen', true);   // 11/20/25 Strongly suspect that this is right, and what follows is wrong
+    // if (isMobileScreenSize()) {
+    //   historyPush('/settings/hamburger');
+    // } else {
+    //   historyPush('/settings/general');
+    // }
   }
 
   transitionToYourVoterGuide () {
@@ -257,7 +259,7 @@ class HeaderBackToVoterGuides extends Component {
     const electionName = BallotStore.currentBallotElectionName;
     // const atLeastOnePositionFoundForThisElection = positionListForOneElection && positionListForOneElection.length !== 0;
 
-    const changeElectionButtonHtml = isMobileScreenSize() ? (<></>) : (
+    const changeElectionButtonHtml = isMobileScreenSize() && isWebApp() ? (<></>) : (
       <Tooltip title="Change Election" aria-label="Change Election" classes={{ tooltipPlacementBottom: classes.tooltipPlacementBottom }}>
         <span>
           <IconButton
@@ -283,7 +285,7 @@ class HeaderBackToVoterGuides extends Component {
     );
 
     let appBarCname = 'page-header page-header__voter-guide-creator';
-    if (hasIPhoneNotch()) {
+    if (hasCordovaNotch()) {
       appBarCname = 'page-header page-header__cordova-iphonex page-header__voter-guide-creator';
     } else if (isCordova()) {
       appBarCname = 'page-header page-header__cordova page-header__voter-guide-creator';

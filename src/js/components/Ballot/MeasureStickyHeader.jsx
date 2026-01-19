@@ -2,10 +2,10 @@ import { keyframes } from '@emotion/react';
 import PropTypes from 'prop-types';
 import React, { Component, Suspense } from 'react';
 import styled from 'styled-components';
-import { isIOSAppOnMac, isIPad } from '../../common/utils/cordovaUtils';
+import standardBoxShadow from '../../common/components/Style/standardBoxShadow';
+import { isIOSAppOnMac, isIPad, isIPadMini } from '../../common/utils/cordovaUtils';
 import { isCordova, isWebApp } from '../../common/utils/isCordovaOrWebApp';
 import { renderLog } from '../../common/utils/logging';
-import standardBoxShadow from '../../common/components/Style/standardBoxShadow';
 import MeasureStore from '../../stores/MeasureStore';
 import { cordovaStickyHeaderPaddingTop } from '../../utils/cordovaOffsets';
 
@@ -97,9 +97,8 @@ const slideDown = keyframes`
     transform: translateY(0);
   }
 `;
-const MeasureStickyHeaderWrapper = styled('div', {
-  shouldForwardProp: (prop) => !['ipad'].includes(prop),
-})(({ ipad, theme }) => (`
+
+const MeasureStickyHeaderWrapper = styled('div')(({ theme }) => (`
   animation: ${slideDown} 150ms ease-in;
   background: white;
   box-shadow: ${standardBoxShadow('wide')};
@@ -107,14 +106,14 @@ const MeasureStickyHeaderWrapper = styled('div', {
   ${isWebApp() ? 'margin-top: 47px;' : ''}
   max-width: 100%;
   position: fixed;
-  padding-right: 16px;
-  padding-bottom: 8px;
   padding-left: 16px;
-  top: ${() => cordovaStickyHeaderPaddingTop()};
+  padding-right: 16px;
+  padding-bottom: ${isIPadMini() ? '16px' : '8px'};
+  top: ${cordovaStickyHeaderPaddingTop()};
   width: 100vw;
   z-index: 2;
   ${theme.breakpoints.up('sm')} {
-    padding-top: ${ipad ? '' : '0'};
+    padding-top: ${isIPad() || isIOSAppOnMac() ? '' : '0'};
   }
   ${theme.breakpoints.down('sm')} {
     ${isWebApp() ? 'margin-top: 46px;' : ''}

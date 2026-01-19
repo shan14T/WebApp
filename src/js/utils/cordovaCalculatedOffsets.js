@@ -1,17 +1,16 @@
 import AppObservableStore from '../common/stores/AppObservableStore';
-import { hasIPhoneNotch, isAndroidSizeMD, isAndroidSizeWide, isAndroidSizeXL, isIOS, isIOSAppOnMac, isIPad } from '../common/utils/cordovaUtils';
+import { heightOfCordovaSpacer, isAndroidSizeWide, isAndroidSizeXL, isIOS, isIOSAppOnMac, isIPad, isIPhoneSmall } from '../common/utils/cordovaUtils';
+import decorativeSpacing from '../common/utils/decorativeSpacing';
 import { normalizedHrefPage } from '../common/utils/hrefUtils';
 import { isAndroid, isCordova, isWebApp } from '../common/utils/isCordovaOrWebApp';
 import { cordovaOffsetLog } from '../common/utils/logging';
 import CordovaPageConstants from '../constants/CordovaPageConstants';
 import { getPageKey } from './cordovaPageUtils';
-import { decorativeSpacing } from './cordovaTopHeaderTopMargin';
 import { pageEnumeration } from './cordovaUtilsPageEnumeration';
 
 /* global $ */
 
 // Static data
-let ballotHeaderOffset = -1;
 let pageData = {};
 let topOffsets = {};
 let offsetsSignedInState;
@@ -27,142 +26,72 @@ function debugLogging (string) {
   }
 }
 
-// Simple Header
-function setBallotHeaderOffset (bho) {
-  ballotHeaderOffset = bho;
-}
-
 function clearAllOnSignInStateChange (isSignedIn) {
   // Wipe out all state info if isSignedIn state changes
   if (offsetsSignedInState !== isSignedIn || $.isEmptyObject(pageData)) {
     debugLogging('clearAllOnSignInStateChange clearing all data --------');
     offsetsSignedInState = isSignedIn;
-    ballotHeaderOffset = 0;
     topOffsets = {};
     pageData = Object.assign(defaultPageData);
   }
 }
 
-export function setBallotDualHeaderContentContainerTopOffset (isSignedIn) {
-  if (isWebApp()) return;
-  clearAllOnSignInStateChange(isSignedIn);
-  const dhc = $('div[class*=\'DualHeaderContainer\']');  // none
-  if (isIPad()) {
-    debugLogging('setBallotDualHeaderContentContainerTopOffset no Top Offset set, for iPad');
-    return;
+function calcOffset (wrapper, wrapperContainer, type, pageHref, heightOfHW) {
+  // console.log(`offsetToBottomOfHeadroomWrapper SUCCESSFUL FOR wrapType: ${wrapper}`);
+  const outerHeight = wrapperContainer.outerHeight();
+  const position = wrapperContainer?.position()?.top || 0;
+  let offset = outerHeight + (isIPhoneSmall() ? 0 : position);
+  if (wrapper === 'DualHeaderContainer') {
+    // console.log(`calcOffset adding ${offset} to offset`);
+    offset += heightOfHW;
   }
-  if (ballotHeaderOffset > 0) {  // global to this file, ballotHeaderOffset
-    debugLogging('setBallotDualHeaderContentContainerTopOffset Top Offset set, Cordova, top = ', ballotHeaderOffset);
-    dhc.css('top', ballotHeaderOffset);
-    return;
-  }
-  const page = getPageKey();
-  if (pageData.previousPage !== page || ballotHeaderOffset <= 0) {
-    pageData.previousPage = page;
-    for (let i = 0; i < 4; i++) {
-      let topOffset = 0;
-      setTimeout(() => {
-        debugLogging(`setBallotDualHeaderContentContainerTopOffset loop, i = ${i}`);
-        const preAdjustDatumMin = 50;
-        const headerContentContainerMin = 60;
-        const initDatumOffset = $('#cordovaHeaderBottomDatum').offset() || { left: 0, top: 0 };
-        if (initDatumOffset !== undefined && initDatumOffset.top > 0) {
-          const preAdjustDatum = initDatumOffset.top;
-          if (preAdjustDatum >= preAdjustDatumMin) {
-            debugLogging(`acceptable preAdjustDatum from dom ${preAdjustDatum}`);
-            const headerContentContainerHeight = $('div[class*=\'HeaderContentContainer\']').height();
-            let iOsSpacerHeight = 0;
-            const iosSpacerElem = $('div[class*=\'IOSNotchedSpacer\']');
-            const hasNoNotch = $('div[class*=\'IOSNoNotchSpacer\']').length > 0;
-            debugLogging(`calculation --------- hasNoNotch ${hasNoNotch}`);
-            if (hasNoNotch) {  // ipads and old iPhones and Androids
-              const headroomWrapper = $('div[class*=\'HeadroomWrapper\']');
-              topOffset = isIOS() ? 0 : headroomWrapper.height();
-            } else if (iosSpacerElem.length) {
-              iOsSpacerHeight = iosSpacerElem.height;
-              const headerBarWrapperHeight = $('div[class*=\'HeaderBarWrapper\']').height();
-              topOffset = iOsSpacerHeight + headerBarWrapperHeight + headerContentContainerHeight - preAdjustDatum - 2;
-            }
-
-            debugLogging(`setBallotDualHeaderContentContainerTopOffset headerContentContainerHeight ${headerContentContainerHeight}`);
-            if (headerContentContainerHeight !== undefined && headerContentContainerHeight > headerContentContainerMin) {
-              debugLogging(`calculation ios ${iOsSpacerHeight}, hcc ${headerContentContainerHeight}, preAdjustDatum ${preAdjustDatum}, calc ${topOffset}`);
-              if (topOffset > 0) {
-                debugLogging(`DualHeaderContainer top set to: ${topOffset}`);
-                setBallotHeaderOffset(topOffset);
-                dhc.css('top', topOffset);
-              }
-            } else {
-              debugLogging(`headerContentContainer ${headerContentContainerHeight}`);
-            }
-          } else {
-            debugLogging(`preAdjustDatum >= preAdjustDatumMin ${preAdjustDatum} ${preAdjustDatumMin}`);
-          }
-        }
-      }, 100);  // Wait for Ballot header to render, if initial URL is /ballot
-    }
-  }
+  cordovaOffsetLog(`offsetToBottomOfHeadroomWrapper -> calcOffset  type: ${type}, pageHref: %c${pageHref}%c, wrapType: ${wrapper}, offset: ${offset}, position: ${position}, outerHeight: ${outerHeight}`, 'font-weight: bold;', 'font-weight: 400;');
+  return offset;
 }
 
-export function cordovaComplexHeaderPageContainerTopOffset () {
-  if (isWebApp()) return '';
-  const iOSNotchedSpacer = $('div[class*=\'IOSNotchedSpacer\']');
-  const headroomWrapper = $('div[class*=\'HeadroomWrapper\']');
-  const dualHeaderContainer = $('div[class*=\'DualHeaderContainer\']');
-  const dhcHeight = dualHeaderContainer.height() || 0;   // No dualHeaderCont for Friends when signed in
-  let hrHeight = 0;
+export function outerHeightOfDualHeaderContainer () {
+  const dualHeaderContainer = $(`div[class*="${'DualHeaderContainer'}"]`);
+  return dualHeaderContainer.length > 0 ? dualHeaderContainer.outerHeight() : 0;
+}
 
-  if (isIOS()) {
-    // Calculated approach Nov 2022
-    if (dualHeaderContainer.length) {
-      let calculated = dualHeaderContainer.outerHeight();
-      let decoration = decorativeSpacing();
-      if (isIPad()) {
-        calculated = 0;
-        decoration = 80;
-      }
-      cordovaOffsetLog(`cordovaTopHeaderTopMargin .dualHeaderContainer outerHeight: ${calculated}, decoration: ${decoration}, page: ${getPageKey()}`);
-      return `${calculated + decoration}px`;
-    }
-    // end calculated approach
-
-    if (hasIPhoneNotch()) {
-      if (getPageKey() === 'friends') {
-        hrHeight = headroomWrapper.height();
-      } else if (getPageKey() === 'ballot' && isIPad()) {
-        hrHeight = 0;
-      } else {
-        hrHeight = iOSNotchedSpacer.height();
-      }
-    }
-  }
-
+// eslint-disable-next-line no-unused-vars
+export function offsetToBottomOfHeadroomWrapper (type, override = false) {
+  const headroomWrapper = $(`div[class*="${'HeadroomWrapper'}"]`);
+  const heightOfHW = headroomWrapper.length > 0 ? headroomWrapper.height() : 0;
+  const outerHeightOfHW = headroomWrapper.length > 0 ? headroomWrapper.outerHeight() : 0;
+  // const outerHeightOfDHC = outerHeightOfDualHeaderContainer();
+  const pageHref = normalizedHrefPage();
+  // console.log('offsetToBottomOfHeadroomWrapper heightOfHW', heightOfHW);
+  const dualHeaderContainer = $(`div[class*="${'DualHeaderContainer'}"]`);
   if (isAndroid()) {
-    hrHeight = headroomWrapper.height();
-    if (isAndroidSizeMD() || isAndroidSizeXL() || isAndroidSizeWide()) {
-      try {
-        const ballotWrapperBody = $('#BallotWrapperBody');
-        if (ballotWrapperBody.length) {
-          const padDigits = ballotWrapperBody.css('padding-top').replace('px', '');
-          hrHeight -= parseInt(padDigits) + 50;  // 50 to get more payload content between the menus on mobile devices
-        }
-      } catch (e) {
-        console.error('It looks like the layout of the ballot has changed');
+    return outerHeightOfHW;
+  } else if (headroomWrapper.length > 0) {
+    if (heightOfHW === 0) {
+      // Fallback for value and measure pages which end up with a zero height headroom wrapper (probably because of a fixed top value inside)
+      const headerBackToAppBar = $('#headerBackToAppBar');
+      const headerBackToBallotAppBar = $('#headerBackToBallotAppBar');
+      const bar = (headerBackToAppBar.length > 0) ? headerBackToAppBar : headerBackToBallotAppBar;
+      const barName = (headerBackToAppBar.length > 0) ? 'headerBackToAppBar' : 'headerBackToBallotAppBar';
+      const heightAppBar = bar.height();
+      if (heightAppBar > 0) {
+        return calcOffset(barName, bar, type, pageHref, heightAppBar);
       }
     }
+    return calcOffset('HeadroomWrapper', headroomWrapper, type, pageHref, heightOfHW);
+  } else if (dualHeaderContainer.length > 0) {
+    return calcOffset('DualHeaderContainer', dualHeaderContainer, type, pageHref, heightOfHW);
   }
 
-  const topOffsetValue = hrHeight + dhcHeight;
-
-  if ($.isNumeric(topOffsetValue)) {
-    pageData.previousPage = getPageKey();
-    debugLogging(`cordovaComplexHeaderPageContainer topOffset success ${topOffsetValue}`);
-    return `${topOffsetValue}px`;
-  }
-  debugLogging(`cordovaComplexHeaderPageContainer topOffset not a number ${topOffsetValue}`);
-  return '0';
+  console.log(`ERROR in offsetToBottomOfHeadroomWrapper type: ${type}, pageHref ${pageHref} -- No known Headroom Container type found`);
+  return 0;
 }
 
+export function cordovaFullyCalculatedHeaderContainerTopOffset (rootTag) {
+  if (isWebApp()) return '';
+  const raw = offsetToBottomOfHeadroomWrapper(`${rootTag}+newAndImproved`);
+  const decoration = decorativeSpacing();
+  return raw + decoration;
+}
 
 function setCordovaSimplePageContainerTopOffsetValue (topOffsetValue) {
   const page = getPageKey();
@@ -182,16 +111,36 @@ export function headroomWrapperOffset (includePosition, pageNameOverride = null)
   if (isCordova()) {
     const { $ } = window;
     const headroomWrapper = $('div[class*=\'HeadroomWrapper\']');
-    const outerHeight = headroomWrapper.outerHeight();
-    const position = includePosition && headroomWrapper.length > 0 ? headroomWrapper.position().top : 0;
-    offset = outerHeight + position;
+    let outerHeight = headroomWrapper.outerHeight();
     const page = pageNameOverride || pageEnumeration();
+    let position = 0;
+    if (page === 'measureWild' || (page === 'candidateWild') || includePosition) {
+      if (headroomWrapper.length > 0) {
+        position = headroomWrapper.position().top;
+      }
+    }
+    offset = outerHeight + position;
+    if (outerHeight === 0) {
+      const cordovaTopHeaderTopMargin = $('div[class*=\'cordovaTopHeaderTopMargin\']');
+      const topMargin = cordovaTopHeaderTopMargin.css('marginTop');
+      if (topMargin) {
+        const valueString = topMargin.replace('px', '');
+        position = parseInt(valueString);
+        outerHeight = cordovaTopHeaderTopMargin.outerHeight();
+        offset = outerHeight + position;
+        cordovaOffsetLog(`headroomWrapperOffset cordovaTopHeaderTopMargin outerHeight+top: ${outerHeight + position}, new offset: ${offset}, page: ${getPageKey()}`);
+      }
+    }
     if (page === 'PoliticianDetailsPage' && isCordova()) {
-      offset = -44;
-    } else if (page === 'candidatelist' || page === 'politicianpage' || page === 'values') {
+      offset = -50;
+    } else if (page === 'candidatelist' || page === 'politicianpage' || page === 'values' || page === 'challenges') {
       if (isIOS()) {
         if (page === 'values') {
           offset /= 3 / 2;
+        } else if (page === 'challenges') {
+          offset += 10;
+        } else if (page === 'candidatelist') {
+          // not needed
         } else {
           offset /= isIPad() ? 2 : 3;
         }
@@ -215,24 +164,39 @@ export function cordovaSimplePageContainerTopOffset (/* isSignedIn */) {
   setTimeout(() => {
     const page = pageEnumeration();
     const pageContentContainer = $('div[class*=\'PageContentContainer\']');
+    const spacerHeight = heightOfCordovaSpacer();
     let height = headroomWrapperOffset(false);  // 11/21/22 now includes the notch height (Value if not backTo)
+    const friendsMenu           = $('friendsHorizontalMenu');
     let                 appBar = $('#headerBackToBallotAppBar');
     if (!appBar.length) appBar = $('#headerBackToAppBar');
     if (!appBar.length) appBar = $('#headerBackToVoterGuidesAppBar');
     if (appBar.length) {
-      height = appBar.outerHeight();
-      cordovaOffsetLog(`cordovaSimplePageContainerTopOffset appBar.outerHeight(): ${height}, page: ${getPageKey()}`);
+      // October 24, 2025, just default to headroomWrapperOffset
+      pageContentContainer.css('padding-top', `${height}px`);
+      return;
+    } else if (friendsMenu.length) {
+      height = spacerHeight + friendsMenu.height();
+      cordovaOffsetLog('cordovaSimplePageContainerTopOffset friendsHorizontalMenu height', height, page);
       pageContentContainer.css('padding-top', `${height}px`);
       return;
     } else if (AppObservableStore.getShowTwitterLandingPage() ||
       [CordovaPageConstants.news, CordovaPageConstants.ready].includes(page)) {
       height = headroomWrapperOffset(true);
       cordovaOffsetLog('cordovaSimplePageContainerTopOffset twitterLanding, news or ready pcc.css height', height, page);
-      pageContentContainer.css('padding-top', `${height}px`);
+      pageContentContainer.css('border-top', `${height}px !important`);
       return;
     } else if ([CordovaPageConstants.moreFaq].includes(page)) {
       height = headroomWrapperOffset(false);
       cordovaOffsetLog('cordovaSimplePageContainerTopOffset moreFaq pcc.css height', height, page);
+      pageContentContainer.css('padding-top', `${height}px`);
+      return;
+    } else if (isIPad()) {
+      height = headroomWrapperOffset(false);
+      const pageKey = getPageKey();
+      if (pageKey === 'challenges') {
+        height += 20;
+      }
+      cordovaOffsetLog('cordovaSimplePageContainerTopOffset iPad height', height, page);
       pageContentContainer.css('padding-top', `${height}px`);
       return;
     }

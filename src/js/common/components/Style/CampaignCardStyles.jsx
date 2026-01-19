@@ -38,7 +38,6 @@ export const CampaignsNotAvailableToShow = styled('div')(({ theme }) => (`
 `));
 
 export const CampaignImageDesktopSharedStyles = css`
-  cursor: pointer;
   margin: 0;
 `;
 
@@ -84,6 +83,7 @@ export const CampaignImageMobilePlaceholder = styled('div', {
   justify-content: center;
   max-height: 157px;
   min-height: 157px;
+  width: 100%;
   ${CampaignImageMobileSharedStyles}
 `));
 
