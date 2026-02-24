@@ -16,6 +16,7 @@ import CandidateStore from '../../stores/CandidateStore';
 import SupportStore from '../../stores/SupportStore';
 import { sortCandidateList } from '../../utils/positionFunctions';
 import { OfficeItemCompressedWrapper, OfficeNameH2 } from '../Style/BallotStyles';
+import TripleDotMenu from '../Widgets/TripleDotMenu';
 
 const ShowMoreButtons = React.lazy(() => import(/* webpackChunkName: 'ShowMoreButtons' */ '../Widgets/ShowMoreButtons'));
 const OfficeInfoModal = React.lazy(() => import(/* webpackChunkName: 'OfficeInfoModal' */ './OfficeInfoModal'));
@@ -102,11 +103,11 @@ class OfficeItemCompressed extends Component {
 
   handleMoreInfoIconHover = () => {
     this.setState({ moreInfoIconHovered: true });
-  }
+  };
 
   handleMoreInfoIconLeave = () => {
     this.setState({ moreInfoIconHovered: false });
-  }
+  };
 
   goToCandidateLink (candidateWeVoteId) {
     const { organizationWeVoteId } = this.props;
@@ -138,12 +139,16 @@ class OfficeItemCompressed extends Component {
         />
         <OfficeNameH2>
           {ballotItemDisplayName}
-          <InfoOutlined
-            style={{ color: moreInfoIconHovered ? DesignTokenColors.primary500 : DesignTokenColors.neutral600, cursor: 'pointer', marginLeft: '8px' }}
-            onMouseEnter={this.handleMoreInfoIconHover}
-            onMouseLeave={this.handleMoreInfoIconLeave}
-            onClick={this.openOfficeInfoModal}
-          />
+          <OfficeHeaderIcons>
+            <InfoOutlined
+              style={{ color: moreInfoIconHovered ? DesignTokenColors.primary500 : DesignTokenColors.neutral600, cursor: 'pointer', marginLeft: '8px', marginRight: '6px' }}
+              onMouseEnter={this.handleMoreInfoIconHover}
+              onMouseLeave={this.handleMoreInfoIconLeave}
+              onClick={this.openOfficeInfoModal}
+            />
+            <VerticalLine />
+            <TripleDotMenu makeVertical />
+          </OfficeHeaderIcons>
           {!!primaryParty && (
             <PrimaryPartyWrapper>
               {' '}
@@ -198,22 +203,24 @@ OfficeItemCompressed.propTypes = {
 
 // OneOfficeCandidateList takes the list of candidates from props, renders them.
 // It takes two props: candidates (the list of candidates to render) and goToCandidateLink (a function to navigate to the candidate's page).
-const OneOfficeCandidateList = ({ candidates, goToCandidateLink, useHelpDefeatOrHelpWin }) => (
-  <BallotScrollingOuterWrapper>
-    {candidates.map((candidate) => {
-      const isSupported = SupportStore.getVoterSupportsByBallotItemWeVoteId(candidate.we_vote_id); // Get support status from SupportStore
-      return (
-        <BallotScrollingContainer
+function OneOfficeCandidateList ({ candidates, goToCandidateLink, useHelpDefeatOrHelpWin }) {
+  return (
+    <BallotScrollingOuterWrapper>
+      {candidates.map((candidate) => {
+        const isSupported = SupportStore.getVoterSupportsByBallotItemWeVoteId(candidate.we_vote_id); // Get support status from SupportStore
+        return (
+          <BallotScrollingContainer
           key={`candidatePreview-${candidate.we_vote_id}`}
           oneCandidate={candidate}
           goToCandidateLink={goToCandidateLink}
           isSupported={isSupported} // Pass the support status as a prop
           useHelpDefeatOrHelpWin={useHelpDefeatOrHelpWin}
-        />
-      );
-    })}
-  </BallotScrollingOuterWrapper>
-);
+          />
+        );
+      })}
+    </BallotScrollingOuterWrapper>
+  );
+}
 OneOfficeCandidateList.propTypes = {
   candidates: PropTypes.array.isRequired,
   goToCandidateLink: PropTypes.func.isRequired,
@@ -242,6 +249,18 @@ const styles = (theme) => ({
 
 const PrimaryPartyWrapper = styled('span')`
   font-size: 18px;
+`;
+
+const OfficeHeaderIcons = styled.div`
+  display: inline-flex;
+  align-items: center;
+`;
+
+const VerticalLine = styled.div`
+  border-left: 1px solid ${DesignTokenColors.neutral200};
+  height: 24px;
+  align-self: center;
+  margin: 0 4px;
 `;
 
 export default withTheme(withStyles(styles)(OfficeItemCompressed));

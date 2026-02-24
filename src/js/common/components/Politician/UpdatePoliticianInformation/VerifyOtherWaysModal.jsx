@@ -11,7 +11,7 @@ import { getPageDetails } from '../../../../utils/lookupPageNameAndPageTypeDict'
 import VoterStore from '../../../../stores/VoterStore';
 import PoliticianStore from '../../../stores/PoliticianStore';
 
-const VerifyOtherWaysModal = ({ politicianName, politicianWeVoteId }) => {
+function VerifyOtherWaysModal ({ politicianName, politicianWeVoteId }) {
   const [relationshipOption, setRelationshipOption] = useState(null);
   const [otherOptionText, setOtherOptionText] = useState(null);
   const [campaignEmail, setCampaignEmail] = useState('');
@@ -65,8 +65,8 @@ const VerifyOtherWaysModal = ({ politicianName, politicianWeVoteId }) => {
   ) => {
     const lines = [];
 
-    const option = relationshipOptionParam && relationshipOptionParam === 'Other'
-      ? `${relationshipOptionParam} - ${otherOptionTextParam.trim()}` : relationshipOptionParam;
+    const option = relationshipOptionParam && relationshipOptionParam === 'Other' ?
+      `${relationshipOptionParam} - ${otherOptionTextParam.trim()}` : relationshipOptionParam;
 
     lines.push(`Relationship to Candidate: ${option}`);
 
@@ -103,7 +103,7 @@ const VerifyOtherWaysModal = ({ politicianName, politicianWeVoteId }) => {
 
   const dialogTitleJsx = (
     <VerifyOtherWaysModalHeader>
-      {formSubmitted ? `Verification form submitted` :
+      {formSubmitted ? 'Verification form submitted' :
         `Verify you're authorized to edit ${politicianName}'s profile`}
     </VerifyOtherWaysModalHeader>
   );
@@ -282,7 +282,7 @@ const VerifyOtherWaysModal = ({ politicianName, politicianWeVoteId }) => {
       tallMode
     />
   );
-};
+}
 
 VerifyOtherWaysModal.propTypes = {
   politicianName: PropTypes.string,

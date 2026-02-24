@@ -190,7 +190,7 @@ class HeaderBar extends Component {
     } */
       this.customHighlightSelector(newValue);
     });
-  }
+  };
 
   handleResizeLocal () {
     if (handleResize('HeaderBar')) {
@@ -286,6 +286,7 @@ class HeaderBar extends Component {
       case 'more/donate': return 5;
       case 'more':
       case 'managecandidates': return 99;
+      case 'no-candidates-claimed': return 99;
       default: return false;
     }
   };
@@ -297,7 +298,7 @@ class HeaderBar extends Component {
   openHowItWorksModal = () => {
     // console.log('Opening modal');
     AppObservableStore.setShowHowItWorksModal(true);
-  }
+  };
 
   navTo = (path, highlightValue = 99) => () => {
     this.setState({ moreAnchorEl: null });
@@ -380,6 +381,9 @@ class HeaderBar extends Component {
           more.css(highlight);
           break;
         case 'managecandidates':
+          more.css(highlight);
+          break;
+        case 'no-candidates-claimed':
           more.css(highlight);
           break;
         case 'more':
@@ -533,7 +537,8 @@ class HeaderBar extends Component {
                       />
                     )}
                     <Tab
-                      value={99}
+                      value={3}
+                      tabIndex={0}
                       classes={isWebApp() ? { root: classes.tabRoot, selected: classes.tabSelected } : { root: classes.tabRootMore, selected: classes.tabSelected }}
                       id="moreTabHeaderBar"
                       label={(
@@ -544,7 +549,14 @@ class HeaderBar extends Component {
                       )}
                       onClick={(event) => {
                         this.setState({ moreAnchorEl: event.currentTarget });
-                        this.handleTabChange(99); // Highlight the tab
+                        this.handleTabChange(3); // Highlight the tab
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          this.setState({ moreAnchorEl: e.currentTarget });
+                          this.handleTabChange(3); // Highlight the tab
+                        }
                       }}
                       aria-controls="more-menu"
                       aria-haspopup="true"
@@ -590,8 +602,8 @@ class HeaderBar extends Component {
                     {nextReleaseFeaturesEnabled && (
                       <StyledMoreMenuItem
                         id="HeaderBarCandidatesManaging"
-                        selected={['manage', 'managecandidates'].includes(normalizedHrefPage())}
-                        onClick={this.navTo('/managecandidates', 99)}
+                        selected={['manage', 'managecandidates', 'no-candidates-claimed'].includes(normalizedHrefPage())}
+                        onClick={this.navTo('/no-candidates-claimed', 99)}
                         disableRipple
                       >
                         Candidates I&apos;m managing

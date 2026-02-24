@@ -95,6 +95,9 @@ class SettingsPoliticianPicture extends Component {
         userDetails: VoterStore.getAnalyticsUserDetails(),
         pageDetails: getPageDetails(),
       };
+      if (politicianWeVoteId) {
+        dataLayerObject.politicianDetails = PoliticianStore.getAnalyticsPoliticianDetails(politicianWeVoteId);
+      }
       TagManager.dataLayer({ dataLayer: dataLayerObject });
     }
 
@@ -103,7 +106,7 @@ class SettingsPoliticianPicture extends Component {
       profileImageTypeCurrentlyActiveSet: false,
       uploadedFileStaged: false,
     });
-  }
+  };
 
   changeProfileImageTypeCurrentlyActive (e) {
     // console.log('changeProfileImageTypeCurrentlyActive:', e);

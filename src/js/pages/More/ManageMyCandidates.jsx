@@ -1,24 +1,14 @@
+import { CheckCircle as CheckIcon, Close as CloseIcon, ContentCopy as CopyIcon, Edit as EditIcon, Facebook as FacebookIcon, FileUpload as UploadIcon, PersonOutline as PersonIcon, Visibility as EyeIcon, X as XIcon } from '@mui/icons-material';
 import React, { Suspense, useCallback, useRef, useState } from 'react';
-import {createPortal} from 'react-dom';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components';
-import {
-  Edit as EditIcon,
-  ContentCopy as CopyIcon,
-  Visibility as EyeIcon,
-  Facebook as FacebookIcon,
-  X as XIcon,
-  FileUpload as UploadIcon,
-  CheckCircle as CheckIcon,
-  Close as CloseIcon,
-  PersonOutline as PersonIcon } from '@mui/icons-material';
-import { ImportInviteIcon } from '../ManageMyCandidates/ManageMyCandidatesLanding';
 import DesignTokenColors from '../../common/components/Style/DesignTokenColors';
-
 import EditInvitationModal from '../../components/More/EditInvitationModal';
+import EnterOneByOneModal from '../../components/More/EnterOneByOneModal';
+import { StyledImportInviteIcon } from '../../components/More/ImportInviteIcon';
 import PasteListModal from '../../components/More/PasteListModal';
 import PreviewInvitationModal from '../../components/More/PreviewInvitationModal';
 import UploadCSVModal from '../../components/More/UploadCSVModal';
-import EnterOneByOneModal from '../../components/More/EnterOneByOneModal';
 
 const ImportedVotersList = React.lazy(() => import('../../components/PoliticiansManaged/ImportedVotersList'));
 
@@ -78,6 +68,7 @@ Thanks for your help!`);
     notify('Invitation updated.', true);
   };
 
+  // TODO:  This is defined in 3 places in the Web App, it should be moved to a common utility location and wrapped in a function that does the test
   const emailRE = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
 
   // const handleInviteSelected = useCallback((rows) => {
@@ -106,9 +97,9 @@ Thanks for your help!`);
   const handleCopyInviteBody = async () => {
     try {
       await navigator.clipboard.writeText(`${invitationBody}\n\nhttps://wevote.us/join/${selectedPoliticianWeVoteId}`);
-      const message = window.innerWidth >= 576
-        ? 'Invitation copied to clipboard. Press ⌘V / Ctrl+V to paste.'
-        : 'Invitation copied to clipboard.';
+      const message = window.innerWidth >= 576 ?
+        'Invitation copied to clipboard. Press ⌘V / Ctrl+V to paste.' :
+        'Invitation copied to clipboard.';
       notify(message, true);
     } catch {
       notify('Copy failed. Select the text and copy manually.', false, 3000);
@@ -144,7 +135,7 @@ Thanks for your help!`);
   };
 
   const handleImportFromEnterOne = (rows) => {
-    setImportedVoters((prev) => [...prev, ...rows.map((r) => makeVoterRecord(r, 'Manual entry'))]);
+    setImportedVoters((prev) => [...prev, ...rows.map((r) => makeVoterRecord(r, 'One-by-one'))]);
     notify(`Imported ${rows.length} voter${rows.length !== 1 ? 's' : ''}.`, true);
   };
 
@@ -155,24 +146,26 @@ Thanks for your help!`);
       {/* Desktop and tablet invitation action strip */}
       <InviteRow className="u-show-desktop-tablet">
         <InviteText>Import voters, then invite them to join WeVote.</InviteText>
-        <InviteDivider />
-        <InviteLabel>Invitation:</InviteLabel>
-        <IconButton type="button" title="Copy invitation" onClick={handleCopyInviteBody}>
-          <CopyIcon fontSize="small" />
-        </IconButton>
-        <IconButton type="button" title="Preview invitation" onClick={handlePreviewOpen}>
-          <EyeIcon fontSize="small" />
-        </IconButton>
-        <IconButton type="button" title="Edit invitation" onClick={openEditModal}>
-          <EditIcon fontSize="small" />
-        </IconButton>
-        <InviteLabel>Post to:</InviteLabel>
-        <SocialIconButton type="button" aria-label="Post to Facebook">
-          <FacebookIcon fontSize="small" />
-        </SocialIconButton>
-        <SocialIconButton type="button" aria-label="Post to X">
-          <XIcon fontSize="small" />
-        </SocialIconButton>
+        <InviteDivider className="u-show-desktop" />
+        <InviteQuickLinks>
+          <InviteLabel>Invitation:</InviteLabel>
+          <IconButton type="button" title="Copy invitation" onClick={handleCopyInviteBody}>
+            <CopyIcon fontSize="small" />
+          </IconButton>
+          <IconButton type="button" title="Preview invitation" onClick={handlePreviewOpen}>
+            <EyeIcon fontSize="small" />
+          </IconButton>
+          <IconButton type="button" title="Edit invitation" onClick={openEditModal}>
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <InviteLabel>Post to:</InviteLabel>
+          <SocialIconButton type="button" aria-label="Post to Facebook">
+            <FacebookIcon fontSize="small" />
+          </SocialIconButton>
+          <SocialIconButton type="button" aria-label="Post to X">
+            <XIcon fontSize="small" />
+          </SocialIconButton>
+        </InviteQuickLinks>
       </InviteRow>
 
       {/* Mobile invitation action strip */}
@@ -206,13 +199,13 @@ Thanks for your help!`);
         </MobileInviteActions>
       </MobileInviteContainer>
 
-      <HorizontalDivider className="u-show-mobile"/>
+      <HorizontalDivider className="u-show-mobile" />
 
       {/* Mobile import section */}
       <MobileImportSection className="u-show-mobile">
         {importedVoters.length === 0 && (
           <EmptyVotersText>
-            <span>You don't have any voters to invite yet.</span>
+            <span>You don&apos;t have any voters to invite yet.</span>
             <span>Import your voter list using an option below to get started.</span>
           </EmptyVotersText>
         )}
@@ -248,10 +241,7 @@ Thanks for your help!`);
                 <ImportOptionLabel>Paste list</ImportOptionLabel>
               </ImportOptionWrapper>
               <ImportOptionWrapper>
-                <ImportOptionButton type="button" onClick={() => {
-                  setShowEnterOne(true);
-                  setMobileImportDropdown(false);
-                }}>
+                <ImportOptionButton type="button" onClick={() => setShowEnterOne(true)}>
                   <PersonIcon />
                 </ImportOptionButton>
                 <ImportOptionLabel>Enter one-by-one</ImportOptionLabel>
@@ -264,7 +254,7 @@ Thanks for your help!`);
       <Section className="u-show-desktop-tablet">
         <H3>Enter voters one-by-one</H3>
         <Row>
-          <Input placeholder="First and last name" value={oneName} onChange={(e) => setOneName(e.target.value)} />
+          <Input placeholder="First & last name" value={oneName} onChange={(e) => setOneName(e.target.value)} />
           <Input placeholder="Email" value={oneEmail} onChange={(e) => setOneEmail(e.target.value)} />
           <Input placeholder="Mobile phone" value={onePhone} onChange={(e) => setOnePhone(e.target.value)} />
           <PrimaryButton
@@ -362,8 +352,9 @@ Thanks for your help!`);
 }
 
 // Paste-list icon
-const PasteListIcon = ({ size = 22, title = 'Paste list', ...props }) => (
-  <svg
+function PasteListIcon ({ size = 22, title = 'Paste list', ...props }) {
+  return (
+    <svg
     width={size}
     height={size}
     viewBox="0 0 22 22"
@@ -372,14 +363,15 @@ const PasteListIcon = ({ size = 22, title = 'Paste list', ...props }) => (
     role="img"
     aria-hidden={title ? undefined : true}
     {...props}
-  >
-    {title ? <title>{title}</title> : null}
-    <path
+    >
+      {title ? <title>{title}</title> : null}
+      <path
       d="M18.8125 3C19.1922 3 19.5 3.3078 19.5 3.6875V18.8125C19.5 19.1922 19.1922 19.5 18.8125 19.5H3.6875C3.3078 19.5 3 19.1922 3 18.8125V3.6875C3 3.3078 3.3078 3 3.6875 3H18.8125ZM4.375 18.125H18.125V4.375H4.375V18.125ZM14 14V15.375H5.75V14H14ZM16.75 14V15.375H15.375V14H16.75ZM14 10.5625V11.9375H5.75V10.5625H14ZM16.75 10.5625V11.9375H15.375V10.5625H16.75ZM14 7.125V8.5H5.75V7.125H14ZM16.75 7.125V8.5H15.375V7.125H16.75Z"
       fill="currentColor"
-    />
-  </svg>
-);
+      />
+    </svg>
+  );
+}
 
 const H2 = styled.h2`
   color: ${DesignTokenColors.neutralUI900};
@@ -416,11 +408,11 @@ const Input = styled.input`
   border: 1px solid ${DesignTokenColors.neutralUI300};
   border-radius: 10px;
   flex: 1 1 220px;
-  min-width: 220px;
+  min-width: 120px;
   padding: 12px 14px;
 
   @media (min-width: 1024px) {
-    flex: 0 0 260px;
+    flex: 1 0 160px;
   }
 
   &:focus-visible { outline: 2px solid ${DesignTokenColors.primary500}; outline-offset: 2px; }
@@ -466,6 +458,12 @@ const InviteLabel = styled.span`
   }
 `;
 
+const InviteQuickLinks = styled.span`
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+`;
+
 const MutedNote = styled.p`
   color: ${DesignTokenColors.neutralUI600};
   margin: 40px 0 0;
@@ -502,12 +500,8 @@ const PillButton = styled(PrimaryButton)`
 const Row = styled.div`
   align-items: center;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 12px;
-
-  @media (min-width: 1024px) {
-    flex-wrap: nowrap;
-  }
 `;
 
 const Section = styled.section`
@@ -702,13 +696,4 @@ const RightGroup = styled.div`
   display: flex;
   gap: 8px;
   justify-content: flex-start;
-`;
-
-const StyledImportInviteIcon = styled(ImportInviteIcon)`
-  align-items: center;
-  color: inherit;
-  display: inline-flex;
-  height: 24px;
-  justify-content: center;
-  width: 24px;
 `;
