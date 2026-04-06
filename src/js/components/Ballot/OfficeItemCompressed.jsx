@@ -16,7 +16,7 @@ import CandidateStore from '../../stores/CandidateStore';
 import SupportStore from '../../stores/SupportStore';
 import { sortCandidateList } from '../../utils/positionFunctions';
 import { OfficeItemCompressedWrapper, OfficeNameH2 } from '../Style/BallotStyles';
-import TripleDotMenu from '../Widgets/TripleDotMenu';
+import OfficeHeaderTripleDotMenu from '../BallotItem/OfficeHeaderTripleDotMenu';
 
 const ShowMoreButtons = React.lazy(() => import(/* webpackChunkName: 'ShowMoreButtons' */ '../Widgets/ShowMoreButtons'));
 const OfficeInfoModal = React.lazy(() => import(/* webpackChunkName: 'OfficeInfoModal' */ './OfficeInfoModal'));
@@ -122,11 +122,11 @@ class OfficeItemCompressed extends Component {
     // console.log('OfficeItemCompressed render');
 
     let { ballotItemDisplayName } = this.props;
-    const { isFirstBallotItem, officeWeVoteId, primaryParty, useHelpDefeatOrHelpWin } = this.props; // classes
+    const { hideOfficeHeader, isFirstBallotItem, officeWeVoteId, primaryParty, useHelpDefeatOrHelpWin } = this.props;
     const { candidateListLength, showAllCandidates, totalNumberOfCandidates, moreInfoIconHovered } = this.state;
     ballotItemDisplayName = toTitleCase(ballotItemDisplayName).replace('(Unexpired)', '(Remainder)');
     const moreCandidatesToDisplay = candidateListLength > NUMBER_OF_CANDIDATES_TO_DISPLAY;
-
+    const officeExplanationExists = false; // TODO: Add logic to check if officeExplanation exists
 
     return (
       <OfficeItemCompressedWrapper>
@@ -137,28 +137,38 @@ class OfficeItemCompressed extends Component {
           }}
           style={isFirstBallotItem ? { position: 'absolute', top: '-325px', left: 0 } : { position: 'absolute', top: '-260px', left: 0 }}
         />
-        <OfficeNameH2>
-          {ballotItemDisplayName}
-          <OfficeHeaderIcons>
-            <InfoOutlined
-              style={{ color: moreInfoIconHovered ? DesignTokenColors.primary500 : DesignTokenColors.neutral600, cursor: 'pointer', marginLeft: '8px', marginRight: '6px' }}
-              onMouseEnter={this.handleMoreInfoIconHover}
-              onMouseLeave={this.handleMoreInfoIconLeave}
-              onClick={this.openOfficeInfoModal}
-            />
-            <VerticalLine />
-            <TripleDotMenu makeVertical />
-          </OfficeHeaderIcons>
-          {!!primaryParty && (
-            <PrimaryPartyWrapper>
-              {' '}
-              (
-              {primaryParty}
-              {' '}
-              Primary)
-            </PrimaryPartyWrapper>
-          )}
-        </OfficeNameH2>
+        {!hideOfficeHeader && (
+          <OfficeNameH2>
+            <OfficeNamePortion>
+              <DisplayNameWrapper>
+                {ballotItemDisplayName}
+              </DisplayNameWrapper>
+              {!!primaryParty && (
+                <PrimaryPartyWrapper>
+                  {' '}
+                  (
+                  {primaryParty}
+                  {' '}
+                  Primary)
+                </PrimaryPartyWrapper>
+              )}
+            </OfficeNamePortion>
+            <OfficeHeaderIcons>
+              {officeExplanationExists && (
+                <InfoOutlined
+                  style={{ color: moreInfoIconHovered ? DesignTokenColors.primary500 : DesignTokenColors.neutral600, cursor: 'pointer', marginLeft: '8px', marginRight: '6px' }}
+                  onMouseEnter={this.handleMoreInfoIconHover}
+                  onMouseLeave={this.handleMoreInfoIconLeave}
+                  onClick={this.openOfficeInfoModal}
+                />
+              )}
+              {(officeExplanationExists && officeWeVoteId) && (
+                <VerticalLine />
+              )}
+              <OfficeHeaderTripleDotMenu makeVertical officeWeVoteId={officeWeVoteId} />
+            </OfficeHeaderIcons>
+          </OfficeNameH2>
+        )}
         {/* *************************
           Display either a) the candidates the voter supports, or b) the first few candidates running for this office
           ************************* */}
@@ -183,6 +193,7 @@ class OfficeItemCompressed extends Component {
               isOpen={this.state.officeInfoModalOpen}
               onClose={this.closeOfficeInfoModal}
               officeName={ballotItemDisplayName}
+              officeWeVoteId={officeWeVoteId}
             />
           </Suspense>
         )}
@@ -195,6 +206,7 @@ OfficeItemCompressed.propTypes = {
   ballotItemDisplayName: PropTypes.string.isRequired,
   candidateList: PropTypes.array,
   disableAutoRollUp: PropTypes.bool,
+  hideOfficeHeader: PropTypes.bool,
   isFirstBallotItem: PropTypes.bool,
   organizationWeVoteId: PropTypes.string,
   primaryParty: PropTypes.string,
@@ -247,16 +259,27 @@ const styles = (theme) => ({
   },
 });
 
-const PrimaryPartyWrapper = styled('span')`
-  font-size: 18px;
+const DisplayNameWrapper = styled('div')`
+  padding-bottom: 0;
 `;
 
-const OfficeHeaderIcons = styled.div`
+const OfficeHeaderIcons = styled('div')`
   display: inline-flex;
   align-items: center;
 `;
 
-const VerticalLine = styled.div`
+const OfficeNamePortion = styled('div')`
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+`;
+
+const PrimaryPartyWrapper = styled('div')`
+  font-size: 18px;
+  margin-left: 3px;
+`;
+
+const VerticalLine = styled('div')`
   border-left: 1px solid ${DesignTokenColors.neutral200};
   height: 24px;
   align-self: center;
